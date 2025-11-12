@@ -1,0 +1,29 @@
+<div class="form-container">
+    <h2>Sign Up</h2>
+    <form #SignUpFrom="ngForm">
+      <label>Name:   </label>
+      <input type="text" [(ngModel)]="toSignUp.name" name="name" #name="ngModel" required>
+        @if(name.errors){
+            @if(name.errors['required']){
+                <span>שדה חובה</span>
+      }
+      }
+      
+      <label>Email:  </label>
+      <input type="email" [(ngModel)]="toSignUp.email" name="email" #email="ngModel" required>
+      @if(email.errors){
+          @if(email.errors['required']){
+              <span>שדה חובה</span>
+            }
+        }
+        <label>Password:   </label>
+        <input type="password" [(ngModel)]="toSignUp.password" name="password" #password="ngModel" required>
+          @if(password.errors){
+          @if(password.errors['required']){
+             <span>שדה חובה</span>}
+        }
+    </form>
+    
+        <button (click)="signUp()" [disabled]="SignUpFrom.invalid">Sign Up</button>
+
+  </div>

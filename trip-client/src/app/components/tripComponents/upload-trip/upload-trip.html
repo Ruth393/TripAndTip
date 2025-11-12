@@ -1,0 +1,38 @@
+<div >
+    <h1>add new task</h1>
+        <form #AddForm="ngForm">
+          <label>name:</label>
+          <input type="text" [(ngModel)]="newTrip.name" name="Nname" required minlength="5" #nameId="ngModel">
+          @if(nameId.errors){
+            @if(nameId.errors['required']){
+              <span>you have to enter task name</span>
+            }
+            @if(nameId.errors['minlength']){
+              <span>your task is too short</span>
+             }
+          }
+          <br><br>
+          <label>description:</label>
+          <input type="text" [(ngModel)]="newTrip.description" name="Ndescription" required="false">
+          <br><br>
+            <label>cost:</label>
+            <input type="text" [(ngModel)]="newTrip.cost" name="Ncost" required="false">
+            <label>match:</label>
+            <input type="text" [(ngModel)]="newTrip.match" name="Nmatch" required="false">
+              <br><br>
+            <label for="category">category:</label>
+            <select id="category" [(ngModel)]="newTrip.category.id" name="NcategoryName">
+              @for
+              (category of categoryiesList; track category.id)
+              {
+                <option [value]="category.id">{{category.category}}</option>
+              }
+              <br>
+            </select>
+            <br><br>
+            
+            <button type="submit" (click)="addTrip()" [disabled]="AddForm.invalid">add trip</button>
+            
+          </form>
+        </div>
+        

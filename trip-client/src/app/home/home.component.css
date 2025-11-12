@@ -1,0 +1,41 @@
+.welcome-area {
+  height: 100vh;
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.card {
+  background-color: white;
+  padding: 40px 50px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  max-width: 500px;
+  animation: fadeIn 0.7s ease;
+}
+
+.card h1 {
+  font-size: 36px;
+  color: #007bff;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.card h5 {
+  font-size: 16px;
+  color: #555;
+}
+
+/* אפקט כניסה */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

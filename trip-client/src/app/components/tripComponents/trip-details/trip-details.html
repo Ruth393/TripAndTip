@@ -1,0 +1,27 @@
+<div >
+        <form #AddForm="ngForm">
+          <label>name:</label>
+          <input type="text" [(ngModel)]="TripToShow.name" name="Nname" required minlength="5" #nameId="ngModel">
+          @if(nameId.errors){
+            @if(nameId.errors['required']){
+              <span>you have to enter task name</span>
+            }
+            @if(nameId.errors['minlength']){
+              <span>your task is too short</span>
+             }
+          }
+          <br><br>
+          <label>description:</label>
+          <input type="text" [(ngModel)]="TripToShow.description" name="Ndescription" required="false">
+          <br><br>
+          <label >cost:</label>
+          <input type="text" [(ngModel)]="TripToShow.cost" name="Ncost" required="false">
+          <label>match:</label>
+          <input type="text" [(ngModel)]="TripToShow.match" name="Nmatch" required="false">
+
+         <br><br>
+
+          <button (click)="close()">Close</button>
+          </form>
+        </div>
+        
