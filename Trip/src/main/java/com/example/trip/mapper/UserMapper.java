@@ -15,8 +15,8 @@ public interface UserMapper {
 
         SignInDTO dto = new SignInDTO();
         dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
+        dto.setUserName(user.getUserName());
+        dto.setPassword(user.getPassword());
         return dto;
     }
 
@@ -25,7 +25,7 @@ public interface UserMapper {
             return null;
         }
         Users user = new Users();
-        user.setName(signUpDTO.getName());
+        user.setUserName(signUpDTO.getUserName());
         user.setEmail(signUpDTO.getEmail());
         user.setPassword(signUpDTO.getPassword());
 

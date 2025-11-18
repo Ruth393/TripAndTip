@@ -12,7 +12,7 @@ public class Users {
     @Id
     @GeneratedValue
     private Long id;
-    private String name;
+    private String userName;
     private String email;
     private String password;
 
@@ -26,14 +26,15 @@ public class Users {
 
 
     @ManyToMany
+    @JsonIgnore
     private Set<Role> roles=new HashSet<>();
 
 
     public Users() {
     }
 
-    public Users(String name, String email, String password) {
-        this.name = name;
+    public Users(String userName, String email, String password) {
+        this.userName = userName;
         this.email = email;
         this.password = password;
     }
@@ -46,12 +47,12 @@ public class Users {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getEmail() {

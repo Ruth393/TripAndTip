@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trips")
+@RequestMapping("/api/trip")
 @CrossOrigin
 public class TripController {
     TripRepository tripRepository;

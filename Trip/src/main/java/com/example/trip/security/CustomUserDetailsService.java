@@ -25,14 +25,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user=userRepository.findByName(username);
+        Users user=userRepository.findByUserName(username);
         if (user==null)
             throw new UsernameNotFoundException("user not found");
+        //רשימה של הרשאות
         List<GrantedAuthority> grantedAuthorities=new ArrayList<>();
         for(Role role:user.getRoles())
         {
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName().name()));
         }
-        return new CustomUserDetails(username,user.getPassword(),grantedAuthorities);
+        return new CustomUserDetails(username,user.getPassword(),grantedAuthorities);//יוצר משתמש עבור האבטחה
     }
 }

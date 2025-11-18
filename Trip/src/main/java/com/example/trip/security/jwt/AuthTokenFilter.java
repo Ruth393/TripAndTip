@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+
 import java.io.IOException;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
@@ -22,6 +23,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private CustomUserDetailsService userDetailsService;
 
 
+    //
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         try{

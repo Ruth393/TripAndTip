@@ -18,6 +18,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
+
     public String getJwtFromCookies(HttpServletRequest request) {
         Cookie cookie = WebUtils.getCookie(request, "securitySample");
         if (cookie != null) {
@@ -59,7 +60,6 @@ public class JwtUtils {
                 .compact();
     }
 
-
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode("=============================================sec=============================================================================================================================="));
     }
@@ -70,7 +70,6 @@ public class JwtUtils {
                 .path("/api").maxAge(24*60*60).httpOnly(true).build();
         return cookie;
     }
-
     public ResponseCookie getCleanJwtCookie(){
         ResponseCookie cookie= ResponseCookie.from("securitySample",null).path("/api").build();
         return cookie;

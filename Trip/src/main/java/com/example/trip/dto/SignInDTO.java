@@ -1,20 +1,22 @@
 package com.example.trip.dto;
 
 
+import com.example.trip.model.Comment;
+import com.example.trip.model.Role;
+import com.example.trip.model.Trip;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class SignInDTO {
 
     private Long id;
-    private String name;
-    private String email;
+    private String userName;
+    private String password;
 
-    public String getEmail() {
-        return email;
-    }
+    private Set<Role> roles=new HashSet<>();
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
     public Long getId() {
         return id;
@@ -24,12 +26,28 @@ public class SignInDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
 }

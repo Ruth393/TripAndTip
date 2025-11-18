@@ -4,5 +4,5 @@ import com.example.trip.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<Users,Long> {
-    Users findByName(String name);
+    Users findByUserName(String name);
 }

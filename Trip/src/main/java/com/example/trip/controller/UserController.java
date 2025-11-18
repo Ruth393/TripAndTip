@@ -1,69 +1,93 @@
 package com.example.trip.controller;
 
-import com.example.trip.dto.SignInDTO;
-import com.example.trip.dto.SignUpDTO;
 import com.example.trip.mapper.UserMapper;
 import com.example.trip.model.Users;
+
+import com.example.trip.security.CustomUserDetails;
+import com.example.trip.security.jwt.JwtUtils;
+import com.example.trip.service.RoleRepository;
 import com.example.trip.service.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import static org.springframework.security.authorization.AuthorityReactiveAuthorizationManager.hasRole;
 
-@RequestMapping("api/users")
 @RestController
+@RequestMapping("/api/user")
 @CrossOrigin
 public class UserController {
     private UserRepository userRepository;
-    private UserMapper userMapper;
+    private RoleRepository roleRepository;
+    private AuthenticationManager authenticationManager;
+    private JwtUtils jwtUtils;
+    private UserMapper userMapper; // **שדה נוסף**
 
-    public UserController(UserRepository userRepository, UserMapper userMapper){
+
+    @Autowired
+    public UserController(UserRepository userRepository,RoleRepository roleRepository ,AuthenticationManager authenticationManager,JwtUtils jwtUtils, UserMapper userMapper) { // **ה-Mapper נוסף לקונסטרוקטור**
         this.userRepository = userRepository;
+        this.roleRepository=roleRepository;
+        this.authenticationManager=authenticationManager;
+        this.jwtUtils=jwtUtils;
         this.userMapper = userMapper;
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<List<Users>> getUsers(){
-        try {
-            return new ResponseEntity<>(userRepository.findAll(), HttpStatus.OK);
-        } catch (Exception e) {
-            return  new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @GetMapping("/get")
+    public String get(){
+        return "hello";
+    }
+
+
+
+
+
+    @PostMapping("/signIn")
+    public ResponseEntity<?> signIn(@RequestBody Users u){
+        Authentication authentication=authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(u.getUserName(),u.getPassword()));
+
+        //שומר את האימות
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        //CustomUserDetails לוקח את פרטי המשתמש ומכניס אותם
+        CustomUserDetails userDetails=(CustomUserDetails)authentication.getPrincipal();
+
+        ResponseCookie jwtCookie=jwtUtils.generateJwtCookie(userDetails);
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,jwtCookie.toString())
+                .body(userDetails.getUsername());
     }
 
 
     @PostMapping("/signUp")
-    public ResponseEntity<Users> signUp(@RequestBody SignUpDTO u) {
-        try {
-            Users u1 = userRepository.findByName(u.getName());
-            if (u1 != null) {
-                return new ResponseEntity<>(null, HttpStatus.CONFLICT);
-            }
-            Users newUser = userMapper.toSignUpDTO(u);
-            return new ResponseEntity<>(userRepository.save(newUser), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<Users> signUp(@RequestBody Users user){
+        //נבדוק ששם המשתמש לא קיים
+        Users u=userRepository.findByUserName(user.getUserName());
+        if(u!=null)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        String pass=user.getPassword();//הסיסמא שהמשתמש הכניס - לא מוצפנת
+        user.setPassword(new BCryptPasswordEncoder().encode(pass));
+
+        user.getRoles().add(roleRepository.findById((long)1).get());
+        userRepository.save(user);
+        return new ResponseEntity<>(user,HttpStatus.CREATED);
     }
 
-
-    @PostMapping("/signIn")
-    public ResponseEntity<Users> signIn(@RequestBody SignInDTO u) {
-        try {
-            if (u.getName() == null || u.getName().trim().isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            }
-            Users u1=userRepository.findByName(u.getName());
-            if(u1==null){
-                return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
-            }
-            if(u1.getEmail().equals(u.getEmail())){
-                return new ResponseEntity<>(u1,HttpStatus.OK);
-            }
-            return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @PostMapping("/signOut")
+    public ResponseEntity<?> signOut(){
+        ResponseCookie cookie=jwtUtils.getCleanJwtCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,cookie.toString())
+                .body("you've been signed out!");
     }
 }
+
