@@ -1,13 +1,15 @@
-import { Component,OnInit} from '@angular/core';
-import { Router, RouterModule,ActivatedRoute } from '@angular/router';
-import Trip  from '../../../models/trip.model';
-import  {TripService}  from '../../../service/trip.service';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import Trip from '../../../models/trip.model';
+import { TripService } from '../../../service/trip.service';
 
 @Component({
   selector: 'app-trip-list',
-  imports: [RouterModule],
-  templateUrl:'./list-trips.html',
-  styleUrl:'./list-trips.css',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './list-trips.html',
+  styleUrl: './list-trips.css',
 })
 export class TripListComponent implements OnInit{
   public selectedTrip!: Trip

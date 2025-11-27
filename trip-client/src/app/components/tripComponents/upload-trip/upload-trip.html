@@ -1,38 +1,53 @@
-<div >
-    <h1>add new task</h1>
-        <form #AddForm="ngForm">
-          <label>name:</label>
-          <input type="text" [(ngModel)]="newTrip.name" name="Nname" required minlength="5" #nameId="ngModel">
-          @if(nameId.errors){
-            @if(nameId.errors['required']){
-              <span>you have to enter task name</span>
-            }
-            @if(nameId.errors['minlength']){
-              <span>your task is too short</span>
-             }
-          }
-          <br><br>
-          <label>description:</label>
-          <input type="text" [(ngModel)]="newTrip.description" name="Ndescription" required="false">
-          <br><br>
-            <label>cost:</label>
-            <input type="text" [(ngModel)]="newTrip.cost" name="Ncost" required="false">
-            <label>match:</label>
-            <input type="text" [(ngModel)]="newTrip.match" name="Nmatch" required="false">
-              <br><br>
-            <label for="category">category:</label>
-            <select id="category" [(ngModel)]="newTrip.category.id" name="NcategoryName">
-              @for
-              (category of categoryiesList; track category.id)
-              {
-                <option [value]="category.id">{{category.category}}</option>
-              }
-              <br>
-            </select>
-            <br><br>
-            
-            <button type="submit" (click)="addTrip()" [disabled]="AddForm.invalid">add trip</button>
-            
-          </form>
-        </div>
-        
+<div>
+  <h1>upload trip</h1>
+
+  <form #AddForm="ngForm">
+    <!-- debug: show form validity and values -->
+    <pre>valid: {{ AddForm.valid }}  value: {{ AddForm.value | json }}</pre>
+
+    <label>name:</label>
+    <input type="text" [(ngModel)]="newTrip.name" name="name" required minlength="5" #name="ngModel">
+    <div *ngIf="name.invalid && (name.dirty || name.touched)">
+      <div *ngIf="name.errors && name.errors['required']"><span>required</span></div>
+      <div *ngIf="name.errors && name.errors['minlength']"><span>too short</span></div>
+    </div>
+    <br><br>
+
+    <label>description:</label>
+    <input type="text" [(ngModel)]="newTrip.description" name="description">
+    <br><br>
+
+    <label>cost:</label>
+    <input type="text" [(ngModel)]="newTrip.cost" name="cost">
+    <br><br>
+
+    <label>match:</label>
+    <input type="text" [(ngModel)]="newTrip.match" name="match">
+    <br><br>
+
+    <label>image:</label>
+    <input type="file" name="image" accept="image/*" (change)="onFileSelected($event)">
+    <br><br>
+
+    <label>category:</label>
+    <div *ngIf="categoryiesList.length === 0" class="no-cats">
+      <em>No categories available. Please add categories on the server first.</em>
+    </div>
+    <ng-container *ngIf="categoryiesList.length > 0">
+      <select [(ngModel)]="newTrip.category.id" name="categoryId" required #cat="ngModel">
+        <option value="">choose</option>
+        <option *ngFor="let c of categoryiesList" [value]="c.id">{{ c.category }}</option>
+      </select>
+      <div *ngIf="cat.invalid && (cat.dirty || cat.touched)">
+        <span>choose category</span>
+      </div>
+    </ng-container>
+    <br><br>
+
+    <button type="button" (click)="uploadTrip(AddForm)">
+      add trip
+    </button>
+    
+
+  </form>
+</div>

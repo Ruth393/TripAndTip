@@ -1,9 +1,11 @@
 package com.example.trip.controller;
 
+import com.example.trip.dto.ChatRequest;
 import com.example.trip.dto.TripDTO;
 import com.example.trip.dto.TripListDTO;
 import com.example.trip.mapper.TripMapper;
 import com.example.trip.model.Trip;
+import com.example.trip.service.AIChatService;
 import com.example.trip.service.ImageUtils;
 import com.example.trip.service.TripRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,13 +22,15 @@ import java.util.List;
 @RequestMapping("/api/trip")
 @CrossOrigin
 public class TripController {
+    private final AIChatService aIChatService;
     TripRepository tripRepository;
     TripMapper tripMapper;
 
     @Autowired
-    public TripController(TripRepository tripRepository, TripMapper tripMapper) {
+    public TripController(TripRepository tripRepository, TripMapper tripMapper, AIChatService aIChatService) {
         this.tripRepository = tripRepository;
         this.tripMapper=tripMapper;
+        this.aIChatService = aIChatService;
     }
     @GetMapping("/trips")
     public ResponseEntity<List<Trip>> getTrips(){
@@ -86,5 +91,10 @@ public class TripController {
             System.out.println(e);
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/chat")
+    public String getResponse(@RequestBody ChatRequest chatRequest){
+        return aIChatService.getResponse2(chatRequest.message(),chatRequest.conversationId());
     }
 }

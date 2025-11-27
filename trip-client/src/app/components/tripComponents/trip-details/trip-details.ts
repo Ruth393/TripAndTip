@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TripService } from '../../../service/trip.service';
-import Trip,{ TripToAdd} from '../../../models/trip.model';
+import Trip,{ TripToUpload} from '../../../models/trip.model';
 import { ActivatedRoute, Router ,RouterModule} from '@angular/router';
 import Category from '../../../models/category.model';
 import { CategoryService } from '../../../service/category.service';

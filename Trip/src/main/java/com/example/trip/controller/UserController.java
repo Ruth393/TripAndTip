@@ -1,6 +1,7 @@
 package com.example.trip.controller;
 
 import com.example.trip.mapper.UserMapper;
+import com.example.trip.model.ERole;
 import com.example.trip.model.Users;
 
 import com.example.trip.security.CustomUserDetails;
@@ -53,36 +54,35 @@ public class UserController {
 
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> signIn(@RequestBody Users u){
-        Authentication authentication=authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(u.getUserName(),u.getPassword()));
+    public ResponseEntity<?> signIn(@RequestBody Users u) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(u.getUserName(), u.getPassword())
+        );
 
-        //שומר את האימות
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        //CustomUserDetails לוקח את פרטי המשתמש ומכניס אותם
-        CustomUserDetails userDetails=(CustomUserDetails)authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        ResponseCookie jwtCookie=jwtUtils.generateJwtCookie(userDetails);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,jwtCookie.toString())
-                .body(userDetails.getUsername());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body("התחברת בהצלחה!");
     }
-
 
     @PostMapping("/signUp")
-    public ResponseEntity<Users> signUp(@RequestBody Users user){
-        //נבדוק ששם המשתמש לא קיים
-        Users u=userRepository.findByUserName(user.getUserName());
-        if(u!=null)
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        String pass=user.getPassword();//הסיסמא שהמשתמש הכניס - לא מוצפנת
-        user.setPassword(new BCryptPasswordEncoder().encode(pass));
+    public ResponseEntity<?> signUp(@RequestBody Users user) {
+        if (userRepository.findByUserName(user.getUserName()) != null) {
+            return new ResponseEntity<>("משתמש כבר קיים", HttpStatus.BAD_REQUEST);
+        }
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        Role userRole = (Role) roleRepository.findByName(ERole.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("לא נמצא תפקיד USER"));
 
-        user.getRoles().add(roleRepository.findById((long)1).get());
+        user.getRoles().add((com.example.trip.model.Role) userRole);
         userRepository.save(user);
-        return new ResponseEntity<>(user,HttpStatus.CREATED);
-    }
 
+        return new ResponseEntity<>("נרשמת בהצלחה כמשתמש רגיל", HttpStatus.CREATED);
+    }
     @PostMapping("/signOut")
     public ResponseEntity<?> signOut(){
         ResponseCookie cookie=jwtUtils.getCleanJwtCookie();

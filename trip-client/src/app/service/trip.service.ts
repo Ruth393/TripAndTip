@@ -1,33 +1,34 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import Trip,{ TripToAdd } from '../models/trip.model';
-
+import Trip, { TripToUpload } from '../models/trip.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TripService {
-  
+
+  private readonly apiUrl = 'http://localhost:8080/api/trips';
+
   constructor(private _httpClient: HttpClient) { }
 
   getTrips(): Observable<Trip[]> {
-    return this._httpClient.get<Trip[]>('http://localhost:8080/api/trips/tasks');
+    return this._httpClient.get<Trip[]>(`${this.apiUrl}/tasks`);
   }
 
   getTripById(id: number): Observable<Trip> {
-    return this._httpClient.get<Trip>(`http://localhost:8080/api/trips/getTripsById/${id}`)
+    return this._httpClient.get<Trip>(`${this.apiUrl}/getTripsById/${id}`);
   }
 
   getTripsByUserId(id: number): Observable<Trip[]> {
-    return this._httpClient.get<Trip[]>(` http://localhost:8080/api/trips/tripsByUserId/${id}`)
+    return this._httpClient.get<Trip[]>(`${this.apiUrl}/tripsByUserId/${id}`);
   }
 
   getTripsByCategoryId(id: number, id2: number): Observable<Trip[]> {
-     return this._httpClient.get<Trip[]>(` http://localhost:8080/api/trips/tripsByCatgoriesId/${id}/${id2}`)
+    return this._httpClient.get<Trip[]>(`${this.apiUrl}/tripsByCatgoriesId/${id}/${id2}`);
   }
 
-  addTrip(trip: TripToAdd): Observable<TripToAdd> {
-    return this._httpClient.post<TripToAdd>('http://localhost:8080/api/trips/addTrip', trip)
+  uploadTrip(data: TripToUpload | FormData): Observable<any> {
+    return this._httpClient.post(`${this.apiUrl}/uploadTrip`, data);
   }
 }

@@ -1,11 +1,8 @@
 <div id="container">
     <h1>welcome to your tasks list:</h1>
     <br>
-  @for(task of tripList; track $index)
-  {
-    <div class="trip-card">
-      <button (click)="showDetails(task)">task detail</button>
-    </div>
-  }
+  <div *ngFor="let task of tripList; let i = index" class="trip-card">
+    <button (click)="showDetails(task)">task detail</button>
+  </div>
 </div>
 

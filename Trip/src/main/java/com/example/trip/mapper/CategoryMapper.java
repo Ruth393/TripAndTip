@@ -15,7 +15,6 @@ public interface CategoryMapper {
 
             category.setId(c.getId());
             category.setCategory(c.getCategory());
-
             return category;
         }
     }

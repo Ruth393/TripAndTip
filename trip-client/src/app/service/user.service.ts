@@ -1,25 +1,45 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import Users, { SignIn,SignUp } from '../models/user.model'
+// src/app/service/user.service.ts
 
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { SignIn, SignUp, AuthResponse } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class  UserService {
-  constructor(private _httpClient:HttpClient) { }
- 
-getUsersFromServer(): Observable<Users[]>{
-  return this._httpClient.get<Users[]>('http://localhost:8080/api/users/users');
-}
+export class UserService {
+  private apiUrl = 'http://localhost:8080/api/User';
 
-signIn(signIn: SignIn):Observable<Users>{
-  return this._httpClient.post<Users>('http://localhost:8080/api/users/signIn', signIn);
-}
+  constructor(private http: HttpClient) {}
 
-signUp(signUp: SignUp):Observable<Users>{
-  return this._httpClient.post<Users>('http://localhost:8080/api/users/signUp', signUp);
-}
+  // התחברות
+  signIn(signIn: SignIn): Observable<SignIn> {
+    return this.http.post<SignIn>(`${this.apiUrl}/signIn`, signIn);
+  }
 
+  // הרשמה
+  signUp(signUp: SignUp): Observable<SignUp> {
+    return this.http.post<SignUp>(`${this.apiUrl}/signUp`, signUp);
+  }
+
+  // קבלת הטוקן
+  getToken(): string | null {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const userData = JSON.parse(user);
+      return userData.token;
+    }
+    return null;
+  }
+
+  // בדיקה אם מחובר
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  // יציאה
+  logout(): void {
+    localStorage.removeItem('user');
+  }
 }

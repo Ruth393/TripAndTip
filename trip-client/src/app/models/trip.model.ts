@@ -5,19 +5,19 @@ export default class Trip{
 id! :number
 name! :string
 description! :string
-cost! :string
+cost! :number
 match! :string
 users! :Users
 category! :Categorys
 }
 
 
-export class TripToAdd
+export class TripToUpload
 {
 name! :string
 description! :string
 cost! :string
 match! :string
 users!: {id:number}
-category! :{id: number, name?: "", description?: ""}
+category! :{id: number, name?: ""}
 }

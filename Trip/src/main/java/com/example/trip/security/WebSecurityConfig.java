@@ -78,7 +78,11 @@ public class WebSecurityConfig {
                                 auth.requestMatchers("/h2-console/**").permitAll()
                                         .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll()
                                         .requestMatchers("/api/user/get").hasRole("ADMIN")
+                                        .requestMatchers("/api/trip/chat").permitAll()
                                         .requestMatchers("/api/trip/**").permitAll()
+                                        .requestMatchers("/api/trip/getTripById/{id}").permitAll()
+                                        .requestMatchers("/api/trip/tripsByCatgoriesId/{id}").permitAll()
+                                        .requestMatchers("/error").permitAll()
                                         .anyRequest().authenticated()
                 );
 

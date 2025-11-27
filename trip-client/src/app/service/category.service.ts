@@ -17,4 +17,8 @@ getCategorysFromServer(): Observable<Categories[]>{
 getCategoryById(id: number): Observable<Categories>{
   return this._httpClient.get<Categories>(`http://localhost:8080/api/category/getCategoryById/${id}`);
 }
+ 
+ addCategory(category: Partial<Categories>): Observable<Categories> {
+   return this._httpClient.post<Categories>('http://localhost:8080/api/category/addCategory', category);
+ }
 }

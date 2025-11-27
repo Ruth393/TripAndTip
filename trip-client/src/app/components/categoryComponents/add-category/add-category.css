@@ -1,0 +1,46 @@
+/* add-category.css - Pink theme */
+.add-category{
+	max-width:420px;
+	margin:36px auto;
+	padding:22px 26px;
+	background: linear-gradient(135deg, #fff0f6 0%, #ffd6ea 100%);
+	border-radius:14px;
+	box-shadow: 0 8px 24px rgba(255, 105, 180, 0.12);
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	color: #3a2130;
+}
+
+.add-category h2{
+	text-align:center;
+	margin-bottom:14px;
+	color:#b30059;
+}
+
+.add-category form{ display:flex; flex-direction:column; gap:12px; }
+
+label{ font-weight:600; color:#7a2440; }
+
+input[type="text"]{
+	padding:10px 12px;
+	border-radius:10px;
+	border:2px solid rgba(186, 65, 116, 0.15);
+	background: white;
+	transition:box-shadow .2s, border-color .2s;
+}
+
+input[type="text"]:focus{ outline:none; border-color:#ff6fa3; box-shadow:0 6px 18px rgba(255,111,163,0.12); }
+
+.add-category .error{ color:#c92a5a; font-size:0.95rem; }
+.add-category .success{ color:#1b7a4b; font-size:0.95rem; }
+
+button[type="submit"]{
+	margin-top:6px;
+	padding:12px 14px;
+	background: linear-gradient(90deg,#ff6fa3 0%,#ff4d94 100%);
+	color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer;
+	box-shadow:0 8px 20px rgba(255,77,148,0.18);
+}
+
+button[type="submit"]:hover{ transform:translateY(-2px); }
+
+@media (max-width:480px){ .add-category{ margin:18px 12px; padding:16px; } }

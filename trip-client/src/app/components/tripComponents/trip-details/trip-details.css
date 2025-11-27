@@ -1,0 +1,23 @@
+/* trip-details.css - Pink card styling */
+.trip-details-card{
+	max-width:720px;
+	margin:28px auto;
+	padding:22px;
+	background: linear-gradient(135deg,#fff4f9 0%, #ffe6f2 100%);
+	border-radius:14px;
+	box-shadow:0 12px 30px rgba(205,100,150,0.12);
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	color:#3b2630;
+}
+
+.trip-details-card h2{ color:#b30059; margin-bottom:8px; }
+
+.trip-field{ margin-bottom:12px; }
+.trip-field label{ display:block; font-weight:600; color:#7a2440; margin-bottom:6px; }
+.trip-field .value{ padding:10px; background:#fff; border-radius:8px; border:1px solid rgba(186,65,116,0.06); }
+
+.trip-actions{ margin-top:16px; display:flex; gap:12px; }
+.btn-pink{ padding:10px 14px; border-radius:10px; border:none; color:white; background:linear-gradient(90deg,#ff6fa3,#ff4d94); cursor:pointer; box-shadow:0 8px 20px rgba(255,77,148,0.12); }
+.btn-secondary{ padding:10px 14px; border-radius:10px; border:1px solid #ffd6ea; background:#fff; color:#7a2440; cursor:pointer; }
+
+@media (max-width:480px){ .trip-details-card{ margin:14px 12px; padding:16px; } }
