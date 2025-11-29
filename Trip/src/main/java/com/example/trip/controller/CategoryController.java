@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @CrossOrigin
 public class CategoryController {
-
+    private CategoryMapper categoryMapper;;
     private CategoryRepository categoryRepository;
 
     public CategoryController(CategoryRepository categoryRepository){
