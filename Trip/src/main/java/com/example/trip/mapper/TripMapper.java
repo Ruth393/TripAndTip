@@ -16,7 +16,6 @@ public interface TripMapper {
 
     List<TripListDTO> tripsListToDto(List<Trip> trips);
 
-
     default TripDTO tripToDto(Trip t) throws IOException {
         TripDTO tripDTO = new TripDTO();
         tripDTO.setId(t.getId());
@@ -24,29 +23,61 @@ public interface TripMapper {
         tripDTO.setDescription(t.getDescription());
         tripDTO.setCost(t.getCost());
         tripDTO.setMatch(t.getMatch());
-        tripDTO.setImage(t.getImage());
         tripDTO.setImagePath(t.getImagePath());
         tripDTO.setUser(userToSeeDTO(t.getUser()));
         tripDTO.setCategories(t.getCategories());
         tripDTO.setComments(t.getComments());
 
-        tripDTO.setImage(ImageUtils.getImage(t.getImagePath()));
+        if (t.getImagePath() != null && !t.getImagePath().trim().isEmpty()) {
+            try {
+                tripDTO.setImage(ImageUtils.getImage(t.getImagePath()));
+            } catch (IOException e) {
+                tripDTO.setImage(null);
+            }
+        } else {
+            tripDTO.setImage(null);
+        }
+        if ( t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
+            try {
+                tripDTO.getUser().setImage(ImageUtils.getImage(t.getUser().getImagePath()));
+            } catch (IOException e) {
+                tripDTO.getUser().setImage(null);
+            }
+        } else {
+            tripDTO.getUser().setImage(null);
+        }
 
 
         return tripDTO;
     }
 
     default TripListDTO tripListToDto(Trip t) throws IOException {
-        TripListDTO tripListDTO = new TripListDTO();
+        TripListDTO dto = new TripListDTO();
 
-        tripListDTO.setId(t.getId());
-        tripListDTO.setName(t.getName());
-        tripListDTO.setImage(t.getImage());
-        tripListDTO.setImagePath(t.getImagePath());
-        tripListDTO.setUser(userToSeeDTO(t.getUser()));
+        dto.setId(t.getId());
+        dto.setName(t.getName());
+        dto.setImagePath(t.getImagePath());
+        dto.setUser(userToSeeDTO(t.getUser()));
 
-        tripListDTO.setImage(ImageUtils.getImage(t.getImagePath())); // עבר לשימוש ב-getImagePath
+        if (t.getImagePath() != null && !t.getImagePath().trim().isEmpty()) {
+            try {
+                dto.setImage(ImageUtils.getImage(t.getImagePath()));
+            } catch (IOException e) {
+                dto.setImage(null);
+            }
+        } else {
+            dto.setImage(null);
+        }
 
-        return tripListDTO;
+        if ( t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
+            try {
+                dto.getUser().setImage(ImageUtils.getImage(t.getImagePath()));
+            } catch (IOException e) {
+                dto.getUser().setImage(null);
+            }
+        } else {
+            dto.getUser().setImage(null);
+        }
+        return dto;
     }
-}
+    }

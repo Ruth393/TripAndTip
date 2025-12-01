@@ -1,25 +1,36 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import Users, { SignIn,SignUp } from '../models/user.model'
-
+import { SignIn, SignUp, AuthResponse } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class  UserService {
-  constructor(private _httpClient:HttpClient) { }
- 
-getUsersFromServer(): Observable<Users[]>{
-  return this._httpClient.get<Users[]>('http://localhost:8080/api/users/users');
-}
+export class UserService {
+  private apiUrl = 'http://localhost:8080/api/user';
 
-signIn(signIn: SignIn):Observable<Users>{
-  return this._httpClient.post<Users>('http://localhost:8080/api/users/signIn', signIn);
-}
+  constructor(private http: HttpClient) {
+  }
 
-signUp(signUp: SignUp):Observable<Users>{
-  return this._httpClient.post<Users>('http://localhost:8080/api/users/signUp', signUp);
-}
 
+  signIn(signIn: SignIn): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signIn`, signIn, { withCredentials: true })
+
+  }
+
+  signUp(signUp: SignUp): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/signUp`, signUp, { withCredentials: true })
+  }
+
+  getCurrentUser(): Observable<AuthResponse> {
+    return this.http.get<AuthResponse>(`${this.apiUrl}/me`, { withCredentials: true });
+  }
+
+  isSignedIn(): Observable<AuthResponse> {
+    return this.getCurrentUser();
+  }
+
+  signOut(): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/signOut`, {}, { withCredentials: true })
+  }
 }

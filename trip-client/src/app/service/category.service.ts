@@ -11,10 +11,14 @@ export class CategoryService {
   constructor(private _httpClient:HttpClient) { }
  
 getCategorysFromServer(): Observable<Categories[]>{
-  return this._httpClient.get<Categories[]>('http://localhost:8080/api/category/categorys');
+  return this._httpClient.get<Categories[]>('http://localhost:8080/api/category/categorys', { withCredentials: true });
 }
 
 getCategoryById(id: number): Observable<Categories>{
-  return this._httpClient.get<Categories>(`http://localhost:8080/api/category/getCategoryById/${id}`);
+  return this._httpClient.get<Categories>(`http://localhost:8080/api/category/getCategoryById/${id}`, { withCredentials: true });
 }
+ 
+ addCategory(category: Partial<Categories>): Observable<Categories> {
+   return this._httpClient.post<Categories>('http://localhost:8080/api/category/addCategory', category, { withCredentials: true });
+ }
 }

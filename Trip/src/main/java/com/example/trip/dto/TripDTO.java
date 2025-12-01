@@ -35,43 +35,12 @@ public class TripDTO {
     public TripDTO() {
     }
 
-    public String getImage() {
-        return image;
+    public List<Category> getCategories() {
+        return categories;
     }
 
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCost() {
-        return cost;
-    }
-
-    public void setCost(String cost) {
-        this.cost = cost;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 
     public List<Comment> getComments() {
@@ -82,20 +51,36 @@ public class TripDTO {
         this.comments = comments;
     }
 
-    public String getMatch() {
-        return match;
+    public String getCost() {
+        return cost;
     }
 
-    public void setMatch(String match) {
-        this.match = match;
+    public void setCost(String cost) {
+        this.cost = cost;
     }
 
-    public List<Category> getCategories() {
-        return categories;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getImagePath() {
@@ -104,6 +89,22 @@ public class TripDTO {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getMatch() {
+        return match;
+    }
+
+    public void setMatch(String match) {
+        this.match = match;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
 

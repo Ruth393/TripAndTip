@@ -1,0 +1,22 @@
+/* sign-out styles - pink theme */
+.signout-card{
+	max-width:420px;
+	margin:40px auto;
+	padding:20px 24px;
+	background: linear-gradient(135deg,#fff6fb 0%, #ffeaf6 100%);
+	border-radius:12px;
+	box-shadow:0 10px 30px rgba(255,77,148,0.08);
+	text-align:center;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.signout-card h2{ color:#b30059; margin-bottom:6px; }
+.signout-card p{ color:#5a2a3a; margin-bottom:12px; }
+.actions{ display:flex; justify-content:center; gap:12px; margin-top:10px; }
+.btn{ padding:10px 14px; border-radius:10px; border:none; font-weight:600; cursor:pointer; }
+.btn-danger{ background: linear-gradient(90deg,#ff6fa3,#ff4d94); color:#fff; box-shadow:0 8px 20px rgba(255,77,148,0.12); }
+.btn-cancel{ background:#fff0f6; color:#7a2440; border:1px solid rgba(186,65,116,0.08); }
+.btn:disabled{ opacity:0.7; cursor:not-allowed; }
+.loading{ margin-top:10px; color:#7a2440; }
+.error{ margin-top:10px; color:#c92a5a; }
+
+@media (max-width:480px){ .signout-card{ margin:18px 12px; padding:16px; } }

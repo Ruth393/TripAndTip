@@ -8,16 +8,21 @@ import { UnFoundComponent } from './un-found/un-found.component';
 import { TripListComponent } from './components/tripComponents/list-trips/list-trips';
 import { HeaderComponent } from './header/header.component';
 import { WelcomeComponent } from './welcome/welcome.component';
+import { AddCategory } from './components/categoryComponents/add-category/add-category';
+import { SignOutComponent } from './components/userComponents/sign-out/sign-out';
+
 
 export const routes: Routes = [
-    {path: "", redirectTo: "welcome", pathMatch:'full'},
+    {path: "", redirectTo: "list-trips", pathMatch:'full'},
+    {path: "upload-trip", component:UploadTrip},
     {path: "welcome", component: WelcomeComponent},
     {path: "header", component: HeaderComponent},
-    {path: "lsign-in", component: SignInComponent},
+    {path: "sign-in", component: SignInComponent},
     {path: "sign-up", component: SignUpComponent},
+    {path: "sign-out", component: SignOutComponent},
     {path: "home", component: HomeComponent},
-    {path: "list-trips/:id", component:TripListComponent},
+    {path: "list-trips", component:TripListComponent},
     {path: "trip-details/:id", component:TripDetails},
-    {path: "upload-trip", component:UploadTrip},
+    {path: "add-category", component:AddCategory},
     {path: "**", component:UnFoundComponent}
 ];

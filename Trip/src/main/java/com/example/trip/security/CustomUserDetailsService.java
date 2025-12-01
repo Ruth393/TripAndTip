@@ -28,7 +28,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         Users user=userRepository.findByUserName(username);
         if (user==null)
             throw new UsernameNotFoundException("user not found");
-        //רשימה של הרשאות
         List<GrantedAuthority> grantedAuthorities=new ArrayList<>();
         for(Role role:user.getRoles())
         {

@@ -1,11 +1,68 @@
-<div id="container">
-    <h1>welcome to your tasks list:</h1>
-    <br>
-  @for(task of tripList; track $index)
-  {
-    <div class="trip-card">
-      <button (click)="showDetails(task)">task detail</button>
-    </div>
-  }
-</div>
+<div class="list-container">
+  <mat-card>
+    
+    <mat-card-header>
+      <mat-card-title>רשימת הטיולים</mat-card-title>
+            <!-- <div class="controls-bar">
+        <button mat-raised-button color="primary" (click)="loadTripsByCategories()">
+          <mat-icon>loading</mat-icon>list trips by categories
+        </button>
+      </div> -->
+                  <div class="controls-bar">
+        <button mat-raised-button color="primary" (click)="loadTripsByCurrentUser()">
+          <mat-icon>loading</mat-icon>list mian trips 
+        </button>
+      </div>
+      
+    </mat-card-header>
 
+    <mat-card-content>
+      
+      <div class="controls-bar">
+        <button mat-raised-button color="primary" (click)="addNewTrip()">
+          <mat-icon>add</mat-icon> הוספת טיול חדש
+        </button>
+      </div>
+
+      <div [hidden]="!loading" class="loading-state">
+        <mat-progress-spinner 
+          mode="indeterminate" 
+          [diameter]="30" 
+          color="accent">
+        </mat-progress-spinner>
+        <span>טוען טיולים...</span>
+      </div>
+
+      <mat-error [hidden]="!error" class="error-message">{{ error }}</mat-error>
+
+      <div [hidden]="loading || !!error">
+        
+        <div [hidden]="!(tripList && tripList.length > 0)" class="trips-grid">
+          
+          <mat-card *ngFor="let trip of tripList" class="trip-item-card">
+            
+            <img [src]="getImageSrc(trip)" alt="trip image" class="trip-image-material" [hidden]="!getImageSrc(trip)">
+            
+            <mat-card-header>
+              <mat-card-title>{{ trip.name }}</mat-card-title>
+            </mat-card-header>
+            
+            <mat-card-content>
+               <p class="owner">מוסיף: {{ trip.UserToSeeDTO.id || 'לא ידוע' }}</p>
+               <p class="desc">{{ trip.description }}</p>
+            </mat-card-content>
+
+            <mat-card-actions>
+              <button mat-button color="primary" (click)="showDetails(trip)">פרטים</button>
+            </mat-card-actions>
+
+          </mat-card>
+        </div>
+
+        <div [hidden]="!(tripList && tripList.length === 0)" class="no-trips-message">
+          <p><em>אין טיולים זמינים כרגע.</em></p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

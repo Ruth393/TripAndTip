@@ -1,4 +1,5 @@
 import { Component ,OnInit} from '@angular/core';
+import { UserService } from '../service/user.service';
 
 @Component({
   selector: 'app-home',
@@ -9,14 +10,18 @@ import { Component ,OnInit} from '@angular/core';
 })
 export class HomeComponent implements OnInit {
   userName1: string = ''
+  constructor(private userService: UserService) {}
 
   ngOnInit(): void {
-    const userJson = localStorage.getItem('user');
-    if (userJson) {
-      const user = JSON.parse(userJson);
-      if (user.userName) {
-        this.userName1 = user.userName;
+    // בקשת מידע משתמש נוכחי מהשרת (ישתמש ב-Cookie HttpOnly)
+    this.userService.getCurrentUser().subscribe({
+      next: (res) => {
+        if (res && res.name) this.userName1 = res.name;
+      },
+      error: () => {
+        // אין משתמש מחובר
+        this.userName1 = '';
       }
-    }
+    });
   }
 }

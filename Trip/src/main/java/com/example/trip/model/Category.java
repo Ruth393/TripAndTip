@@ -1,6 +1,7 @@
 package com.example.trip.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class Category {
 
     @ManyToMany(mappedBy = "categories")
     @JsonBackReference
+    @JsonIgnore
     private List<Trip> trips;
 
     public Category() {}

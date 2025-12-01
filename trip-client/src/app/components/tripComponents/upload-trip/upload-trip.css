@@ -1,0 +1,118 @@
+/* upload-trip.css */
+
+/* upload-trip.css - Pink theme */
+div {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: linear-gradient(135deg, #fff4f9 0%, #ffe6f8 100%);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(255, 77, 148, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #a10f4a;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+label {
+  font-weight: 600;
+  color: #6b1838;
+  margin-bottom: 6px;
+  display: block;
+}
+
+input[type="text"],
+input[type="file"],
+select {
+  padding: 12px 16px;
+  border: 2px solid rgba(186,65,116,0.12);
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+select:focus {
+  outline: none;
+  border-color: #ff6fa3;
+  box-shadow: 0 0 0 4px rgba(255,111,163,0.12);
+}
+
+input[type="file"] {
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+select {
+  cursor: pointer;
+}
+
+/* הודעות שגיאה */
+span {
+  color: #c92a5a;
+  font-size: 14px;
+  margin-top: 4px;
+  display: block;
+}
+
+/* כפתור ראשי */
+button[type="submit"] {
+  margin-top: 20px;
+  padding: 14px;
+  background: linear-gradient(to right, #ff6fa3, #ff4d94);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(255,77,148,0.18);
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(255,77,148,0.22);
+}
+
+button[type="submit"]:disabled {
+  background: #f2c6d6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* כפתור ביטול (אם תוסיף אותו) */
+button[type="button"] {
+  background: #fff0f6;
+  color: #6b1838;
+}
+
+button[type="button"]:hover {
+  background: #ffd6ea;
+}
+
+/* רספונסיביות */
+@media (max-width: 480px) {
+  div {
+    margin: 20px 10px;
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+}

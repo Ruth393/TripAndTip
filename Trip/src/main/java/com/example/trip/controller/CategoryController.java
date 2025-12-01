@@ -1,5 +1,6 @@
 package com.example.trip.controller;
 
+import com.example.trip.mapper.CategoryMapper;
 import com.example.trip.model.Category;
 import com.example.trip.model.Comment;
 import com.example.trip.service.CategoryRepository;
@@ -16,10 +17,10 @@ public class CategoryController {
     private CategoryMapper categoryMapper;;
     private CategoryRepository categoryRepository;
 
-    public CategoryController(CategoryRepository categoryRepository){
-        this.categoryRepository=categoryRepository;
+    public CategoryController(CategoryMapper categoryMapper, CategoryRepository categoryRepository) {
+        this.categoryMapper = categoryMapper;
+        this.categoryRepository = categoryRepository;
     }
-
 
     @GetMapping("/getCategoryById/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
@@ -51,5 +52,6 @@ public class CategoryController {
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }

@@ -1,6 +1,7 @@
 package com.example.trip.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class Role {
     private ERole name;
 
     @ManyToMany(mappedBy = "roles")
+    @JsonIgnore
     private List<Users> usersList;
 
     public Long getId() {

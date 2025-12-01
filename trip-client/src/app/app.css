@@ -1,0 +1,16 @@
+.center-content-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  height: 100vh; 
+  padding-top: 50px; 
+}
+
+.welcome-card {
+  max-width: 400px; 
+  text-align: center; 
+}
+
+.button-group button {
+  width: 120px; 
+}

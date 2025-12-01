@@ -1,5 +1,19 @@
-<div class="center">
-    <p>welcome</p>
-    <a routerLink="/sign-in"><button>Sign In</button></a>
-    <a routerLink="/sign-up"><button>Sign Up</button></a>
-  </div>
+<div class="center-content-container">
+  <mat-card class="welcome-card">
+    <mat-card-title>Welcome</mat-card-title>
+
+    <mat-card-content>
+      <p>Please sign in or sign up to begin planning your trip.</p>
+    </mat-card-content>
+
+    <mat-card-actions class="button-group">
+      <a routerLink="/sign-in" tabindex="-1">
+        <button mat-raised-button color="primary">Sign In</button>
+      </a>
+      
+      <a routerLink="/sign-up" tabindex="-1">
+        <button mat-flat-button color="accent">Sign Up</button>
+      </a>
+    </mat-card-actions>
+  </mat-card>
+</div>

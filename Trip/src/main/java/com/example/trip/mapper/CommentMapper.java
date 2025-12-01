@@ -7,6 +7,8 @@ import com.example.trip.model.Users;
 
 import java.io.IOException;
 import java.util.List;
+
+import com.example.trip.service.ImageUtils;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel="spring")
@@ -22,6 +24,17 @@ public interface CommentMapper {
         commentDTO.setComment(c.getComment());
         commentDTO.setDate(c.getDate());
         commentDTO.setUser(userToSeeDTO(c.getUser()));
+
+
+        if ( c.getUser().getImagePath() != null && !c.getUser().getImagePath().trim().isEmpty()) {
+            try {
+                commentDTO.getUser().setImage(ImageUtils.getImage(c.getUser().getImagePath()));
+            } catch (IOException e) {
+                commentDTO.getUser().setImage(null);
+            }
+        } else {
+            commentDTO.getUser().setImage(null);
+        }
         return commentDTO;
     }
 }

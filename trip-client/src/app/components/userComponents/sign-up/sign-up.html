@@ -1,29 +1,79 @@
 <div class="form-container">
-    <h2>Sign Up</h2>
-    <form #SignUpFrom="ngForm">
-      <label>Name:   </label>
-      <input type="text" [(ngModel)]="toSignUp.name" name="name" #name="ngModel" required>
-        @if(name.errors){
-            @if(name.errors['required']){
-                <span>שדה חובה</span>
-      }
-      }
-      
-      <label>Email:  </label>
-      <input type="email" [(ngModel)]="toSignUp.email" name="email" #email="ngModel" required>
-      @if(email.errors){
-          @if(email.errors['required']){
-              <span>שדה חובה</span>
-            }
-        }
-        <label>Password:   </label>
-        <input type="password" [(ngModel)]="toSignUp.password" name="password" #password="ngModel" required>
-          @if(password.errors){
-          @if(password.errors['required']){
-             <span>שדה חובה</span>}
-        }
-    </form>
-    
-        <button (click)="signUp()" [disabled]="SignUpFrom.invalid">Sign Up</button>
+  <mat-card class="signup-card">
+    <mat-card-title>
+      <h2>Sign Up</h2>
+    </mat-card-title>
 
-  </div>
+    <mat-card-content>
+      <form #SignUpFrom="ngForm" class="signup-form">
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Name</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="toSignUp.userName"
+            name="userName"
+            #userName="ngModel"
+            required
+          />
+          @if(userName.errors && userName.touched){
+            @if(userName.errors['required']){
+              <mat-error>שדה חובה</mat-error>
+            }
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            [(ngModel)]="toSignUp.email"
+            name="email"
+            #email="ngModel"
+            required
+            email
+            />
+          @if(email.errors && email.touched){
+            @if(email.errors['required']){
+              <mat-error>שדה חובה</mat-error>
+            } @else if (email.errors['email']) {
+              <mat-error>פורמט אימייל לא תקין</mat-error>
+            }
+          }
+        </mat-form-field>
+        
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            [(ngModel)]="toSignUp.password"
+            name="password"
+            #password="ngModel"
+            required
+          />
+          @if(password.errors && password.touched){
+            @if(password.errors['required']){
+              <mat-error>שדה חובה</mat-error>
+            }
+          }
+</mat-form-field>
+            <input type="file" (change)="onFileSelected($event)" accept="image/*">
+         <img [src]="getImageSrc(toSignUp)" alt="user image" class="user-image-material" [hidden]="!getImageSrc(toSignUp)">
+        
+      </form>
+    </mat-card-content>
+    
+    <mat-card-actions class="form-actions">
+      <button 
+        mat-raised-button 
+        color="accent" 
+        (click)="signUp()" 
+        [disabled]="SignUpFrom.invalid">
+        Sign Up
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

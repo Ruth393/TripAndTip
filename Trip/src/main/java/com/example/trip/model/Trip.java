@@ -27,6 +27,7 @@ public class Trip {
 
     @ManyToMany
     @JsonManagedReference
+    @JsonIgnore
     private List<Category> categories;
 
     @OneToMany(mappedBy = "trips")

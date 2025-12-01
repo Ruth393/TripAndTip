@@ -1,47 +1,8 @@
-.head {
-  background-color: #007bff;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'Segoe UI', sans-serif;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-/* לינקים בתפריט */
-.head a {
-  color: white;
-  text-decoration: none;
-  margin-right: 20px;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-.head a:hover {
-  color: #d4e3fc;
-}
-
-/* עיגול עם אות משתמש */
-.user-initial {
-  width: 40px;
-  height: 40px;
-  background-color: #ffffff;
-  color: #007bff;
-  font-weight: bold;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 0 4px rgba(0,0,0,0.2);
-}
-
-/* קבוצה של הלינקים */
-.head > a:last-of-type {
-  margin-right: auto; /* מרחיק את הלינקים לצד שמאל */
-}
-
-.head > div {
-  display: flex;
-  align-items: center;
-}
+.toolbar-spacer {
+    flex: 1 1 auto; /* זה מה שדוחף את הקישורים לימין */
+    margin-right: 15px; /* מרווח קטן לאחר הכותרת */
+  }
+  .separator-bar {
+      margin: 0 10px;
+      color: rgba(255, 255, 255, 0.5); /* צבע אפור בהיר */
+  }

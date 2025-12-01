@@ -15,6 +15,8 @@ public class Users {
     private String userName;
     private String email;
     private String password;
+    private String image;
+    private String imagePath;
 
     @OneToMany(mappedBy="user")
     @JsonIgnore
@@ -33,10 +35,16 @@ public class Users {
     public Users() {
     }
 
-    public Users(String userName, String email, String password) {
+    public Users(String userName, List<Trip> trips, Set<Role> roles, String password, String imagePath, String image, Long id, String email, List<Comment> comments) {
         this.userName = userName;
-        this.email = email;
+        this.trips = trips;
+        this.roles = roles;
         this.password = password;
+        this.imagePath = imagePath;
+        this.image = image;
+        this.id = id;
+        this.email = email;
+        this.comments = comments;
     }
 
     public Long getId() {
@@ -95,4 +103,19 @@ public class Users {
     this.roles = roles;
 }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
 }

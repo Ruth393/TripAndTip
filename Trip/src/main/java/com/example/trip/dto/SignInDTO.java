@@ -13,10 +13,12 @@ public class SignInDTO {
 
     private Long id;
     private String userName;
-    private String password;
+    private String image;
+    private String imagePath;
 
-    private Set<Role> roles=new HashSet<>();
 
+    public SignInDTO() {
+    }
 
     public Long getId() {
         return id;
@@ -34,20 +36,21 @@ public class SignInDTO {
         this.userName = userName;
     }
 
-    public String getPassword() {
-        return password;
+    public String getImage() {
+        return image;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
+
 
 }

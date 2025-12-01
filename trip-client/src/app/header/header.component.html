@@ -1,6 +1,17 @@
-<nav class="head">
-  <a  routerLink="/home">Home</a>
-  <a routerLink="/list-trips/-1">All trips</a>
-  <a routerLink="/add-task">Add Task</a>
-   <a routerLink="/welcome">Log out</a>
-</nav>
+<mat-toolbar color="primary">
+  
+  <span><img src="../../../../images/icons/trip.png" alt=""></span>
+  <!-- <img [src]="getImageSrc(userToSeeDTO)" alt="user image" class="user-image-material" [hidden]="!getImageSrc(userToSeeDTO)"> -->
+  <span class="toolbar-spacer"></span>
+
+  <a mat-button routerLink="/home">Home</a>
+  <a mat-button routerLink="/list-trips">All trips</a>
+  <a mat-button routerLink="/upload-trip">Add Trip</a>
+  
+  <span class="separator-bar">|</span>
+
+  <a mat-button routerLink="/sign-in">Sign in</a>
+  <a mat-button routerLink="/sign-up">Sign up</a>
+  <a mat-button routerLink="/sign-out">Sign-out</a>
+  
+</mat-toolbar>

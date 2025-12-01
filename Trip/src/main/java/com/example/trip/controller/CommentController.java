@@ -24,6 +24,7 @@ public class CommentController {
     @GetMapping("/comments")
     public ResponseEntity<List<Comment>> getComments(){
         try {
+
             return new ResponseEntity<>(commentRepository.findAll(), HttpStatus.OK);
         } catch (Exception e) {
             return  new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
@@ -31,7 +32,7 @@ public class CommentController {
     }
 
     @PostMapping("/addComment")
-    public ResponseEntity<Comment> addCategory(@RequestBody Comment c){
+    public ResponseEntity<Comment> addComment(@RequestBody Comment c){
         try {
             return new ResponseEntity<>(commentRepository.save(c), HttpStatus.CREATED);
         } catch (Exception e) {

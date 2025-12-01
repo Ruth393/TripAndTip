@@ -24,30 +24,6 @@ public class TripCategoryInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        Category beach = new Category();
-        beach.setCategory("Beach");
 
-        Category mountain = new Category();
-        mountain.setCategory("Mountain");
-
-        Category city = new Category();
-        city.setCategory("City");
-
-        categoryRepository.saveAll(List.of(beach, mountain, city));
-
-        Trip trip1 = new Trip();
-        trip1.setName("Holiday in Spain");
-        trip1.setCategories(List.of(beach, city));
-
-        Trip trip2 = new Trip();
-        trip2.setName("Adventure in Alps");
-        trip2.setCategories(List.of(mountain));
-
-        Trip trip3 = new Trip();
-        trip3.setName("City Tour in Paris");
-
-        trip3.setCategories(List.of(city));
-
-        tripRepository.saveAll(List.of(trip1, trip2, trip3));
     }
 }

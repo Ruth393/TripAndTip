@@ -8,14 +8,13 @@ import java.util.List;
 @Mapper(componentModel="spring")
 public interface CategoryMapper {
 
-        List<Category> categoryLIst(List<Category> comments);
+        List<Category> categoryList(List<Category> comments);
 
         default Category category(Category c) throws IOException {
             Category category = new Category();
 
             category.setId(c.getId());
             category.setCategory(c.getCategory());
-
             return category;
         }
     }
