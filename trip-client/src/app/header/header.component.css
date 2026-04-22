@@ -6,3 +6,96 @@
       margin: 0 10px;
       color: rgba(255, 255, 255, 0.5); /* צבע אפור בהיר */
   }
+mat-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 64px;               /* גובה סטנדרטי */
+}
+
+mat-toolbar img.toolbar-logo {
+  height: 44px !important;    /* חובה !important כי Material לפעמים דורס */
+  width: auto;
+  margin-right: 20px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0);          /* אם הלוגו שקוף – יראה יפה */
+  padding: 4px;
+}
+.sad-icon {
+  font-size: 80px;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
+.app-logo-only {
+  height: 48px !important;
+  margin-right: 12px;
+}
+.toolbar-logo.profile-image {
+  height: 40px;
+  width: 40px;
+  border-radius: 50% !important;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid rgb(0, 0, 0); 
+}
+
+/* container around profile for hover detection */
+.profile-container {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+/* menu styling */
+.profile-menu .profile-menu-content {
+  padding: 16px;
+  max-width: 220px;
+  text-align: center;
+}
+.profile-menu-img {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+  border: 2px solid #555;
+}
+.profile-name {
+  font-weight: bold;
+  margin: 4px 0;
+}
+.profile-email {
+  font-size: 0.9rem;
+  margin: 4px 0 12px;
+  word-wrap: break-word;
+}
+.profile-menu hr {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+.profile-menu-content button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* the panelClass applied to the mat-menu to make it span the full viewport
+   and have a softly translucent white background.  ::ng-deep is used because
+   the menu is rendered outside the component's shadow DOM. */
+:host ::ng-deep .mat-menu-panel.profile-overlay-menu {
+  background: rgba(255, 255, 255, 0.85) !important;
+  width: 100vw !important;
+  max-width: none !important;
+  /* keep a little padding at top so the toolbar is still visible */
+  margin-top: 64px;
+}
+
+/* make the menu content centered within the wide overlay */
+.profile-menu-content {
+  margin: 0 auto;
+  /* override display if necessary */
+  position: relative;
+  z-index: 2; /* sit above the semi‑transparent backdrop */
+}

@@ -1,7 +1,10 @@
 package com.example.trip.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class UserToSeeDTO {
     private Long id;
+    @NotBlank
     private String userName;
     private String image;
     private String imagePath;

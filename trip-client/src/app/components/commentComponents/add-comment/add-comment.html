@@ -1,1 +1,29 @@
-<p>add-comment works!</p>
+<div class="add-comment-container">
+<h4>הוסף תגובה</h4>
+
+
+<form (ngSubmit)="submitComment()" class="add-comment-form">
+
+
+<textarea
+[(ngModel)]="newComment"
+name="commentText"
+placeholder="כתוב כאן את התגובה שלך..."
+rows="1"
+required
+[disabled]="isSubmitting"></textarea>
+
+
+<div class="form-actions">
+<button
+type="submit"
+class="btn-submit"
+[disabled]="!newComment.trim() || isSubmitting">
+<span *ngIf="!isSubmitting">שלח תגובה</span>
+<span *ngIf="isSubmitting">שולח...</span>
+</button>
+</div>
+
+
+</form>
+</div>

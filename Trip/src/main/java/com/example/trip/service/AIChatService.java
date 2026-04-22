@@ -1,81 +1,70 @@
 package com.example.trip.service;
 
-
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Service;
-import org.springframework.ai.chat.client.ChatClient;
 import reactor.core.publisher.Flux;
 
-
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.List;
-
-
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class AIChatService {
+
     private final ChatClient chatClient;
     private final ChatMemory chatMemory;
 
-    private final static String SYSYEM_INSTRUCTION= """
-             אתה עוזר AI שנועד לעזור בעניני טיולים בארץ בלבד
-            אתה אמור לומר אם זה מתאים לצאת בעונה שביקשו מבחינת התחזית
-            וכן מפה של דרך הגעה למיקום ואיזה קווי אוטובוס יוכלו להגיע הכי קרוב למיקום
-           תביא רעיונות מגובנים ונגישים
-            """;
+    private static final String PACKING_INSTRUCTION = """
+        אתה עוזר AI שמכין רשימת ציוד לטיולים.
+        1. קודם קרא לכלי getTripDetailsForPacking
+        2. השתמש בפרטי הטיול כדי להכין רשימת ציוד
+        3. החזר רשימה מחולקת לקטגוריות
+        """;
 
-    public AIChatService(ChatClient.Builder chatClient, ChatMemory chatMemory) {
-        this.chatClient=chatClient.build();
-        this.chatMemory=chatMemory;
+    public AIChatService(ChatClient.Builder chatClientBuilder,
+                         ChatMemory chatMemory,
+                         AgentTools agentTools) {
+        this.chatMemory = chatMemory;
+        this.chatClient = chatClientBuilder
+                .defaultTools(agentTools)
+                .build();
     }
-    public String getResponse(String prompt){
-        SystemMessage systemMessage = new SystemMessage(prompt);
+
+    public Flux<String> getPackingListForTrip(long tripId) {
+        return chatClient.prompt()
+                .system(PACKING_INSTRUCTION)
+                .user("הכן רשימת ציוד לטיול עם tripId=" + tripId)
+                .stream()
+                .content()
+                .timeout(Duration.ofSeconds(60))
+                .onErrorResume(e -> Flux.just("Error retrieving packing list. Please check connection."));
+    }
+
+    public Flux<String> getResponse2(String prompt, String conversationId) {
+        List<Message> history = chatMemory.get(conversationId);
+        List<Message> limitedHistory = history.size() > 6 ? history.subList(history.size() - 6, history.size()) : history;
+
         UserMessage userMessage = new UserMessage(prompt);
+        AtomicReference<String> fullContent = new AtomicReference<>("");
 
-        List<Message> messageList= List.of(systemMessage,userMessage);
-
-        return chatClient.prompt().messages(messageList).call().content();
-    }
-    //שמירת השיחה עם הזרמות
-//    public Flux<String> getResponse2(String prompt, String conversationId){
-//        List<Message> messageList=new ArrayList<>();
-//
-//        messageList.add(new SystemMessage(SYSYEM_INSTRUCTION));
-//
-//        messageList.addAll(chatMemory.get(conversationId));
-//        UserMessage userMessage=new UserMessage(prompt);
-//        messageList.add(userMessage);
-//
-//        Flux<String> aiResponse=chatClient.prompt().messages(messageList).stream().content();
-//        AssistantMessage aiMessage=new AssistantMessage(aiResponse.toString());
-//
-//        List<Message> messageList1=List.of(userMessage,aiMessage);
-//
-//        chatMemory.add(conversationId,messageList1);
-//        return aiResponse;
-//
-//    }
-    //בלי הזרמה
-    public String getResponse2(String prompt, String conversationId){
-        List<Message> messageList=new ArrayList<>();
-
-        messageList.add(new SystemMessage(SYSYEM_INSTRUCTION));
-
-        messageList.addAll(chatMemory.get(conversationId));
-        UserMessage userMessage=new UserMessage(prompt);
-        messageList.add(userMessage);
-
-        String aiResponse=chatClient.prompt().messages(messageList).call().content();
-        AssistantMessage aiMessage=new AssistantMessage(aiResponse);
-
-        List<Message> messageList1=List.of(userMessage,aiMessage);
-
-        chatMemory.add(conversationId,messageList1);
-        return aiResponse;
-
+        return chatClient.prompt()
+                .messages(limitedHistory)
+                .user(prompt)
+                .stream()
+                .content()
+                .onBackpressureBuffer()
+                .timeout(Duration.ofSeconds(60))
+                .doOnNext(chunk -> fullContent.updateAndGet(c -> c + chunk))
+                .doOnComplete(() -> {
+                    if (!fullContent.get().isEmpty()) {
+                        AssistantMessage aiMessage = new AssistantMessage(fullContent.get());
+                        chatMemory.add(conversationId, List.of(userMessage, aiMessage));
+                    }
+                })
+                .onErrorResume(e -> Flux.just("Connection error. Please try again."));
     }
 }

@@ -15,11 +15,12 @@ import { MaterialModule } from '../../../material.module';
 
 
 export class SignInComponent {
-public toSignIn:SignIn={
-userName :"",
-password :""
-}
-public notFound:boolean=false
+  public toSignIn: SignIn = {
+    // align with updated SignIn model: use email not username
+    email: "",
+    password: ""
+  };
+  public notFound: boolean = false;
 
 constructor(private _userService:UserService,private router:Router){}
   getImageSrc(signIn: SignIn): string | null {
@@ -41,7 +42,6 @@ signIn(){
     },
     error:(err)=>{
       this.notFound=true
-      alert("not found");
       console.log(err);
     }
   })

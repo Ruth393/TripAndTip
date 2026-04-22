@@ -1,17 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import CommentToAdd from '../models/comment.model'
-
+import { CommentDTO, CommentToAdd } from '../models/comment.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class Comment {
-  
+export class CommentService {
+  private readonly baseUrl = 'http://localhost:8080/api/comment';
+
   constructor(private _httpClient: HttpClient) { }
 
-    addTask(comment: CommentToAdd): Observable<CommentToAdd> {
-      return this._httpClient.post<CommentToAdd>('http://localhost:8080/api/comment/addComment',comment );
-    }
+  getCommentsByTripId(tripId: number): Observable<CommentDTO[]> {
+    return this._httpClient.get<CommentDTO[]>(`${this.baseUrl}/getCommentsByTripsId/${tripId}`, { withCredentials: true });
+  }
+
+addComment(comment: CommentToAdd): Observable<CommentDTO> {
+  return this._httpClient.post<CommentDTO>(`${this.baseUrl}/addComment`, comment, { withCredentials: true });
+}
+
 }

@@ -1,0 +1,9 @@
+# Database files
+*.mv.db
+*.trace.db
+
+# node
+node_modules/
+
+# build
+dist/

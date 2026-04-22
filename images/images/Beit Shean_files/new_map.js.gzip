@@ -1,0 +1,595 @@
+var dataGov;
+var matchedIDs;
+jQuery(document).ready(function ($) {
+    let jsonData = {};
+    let jsonFilterData = {};
+    let activeTypes = [];
+    let selectedFilters = {};
+    let areaValue;
+    let filteredItems = [];
+    let baseUrl = window.location.origin;
+    baseUrl.replace(/^https:/, 'http:');
+
+    areaValue = $('#area_child_top_images').attr('data-category-id');
+    console.log(areaValue);
+    // Fetch filter data
+    let filterRequest = $.ajax({
+        type: "GET",
+        url: "/wp-json/wp/v2/json_map_filters",
+       // data: { area: areaValue },
+        dataType: "json"
+    }).then(function (jsonResponse) {
+        jsonFilterData = jsonResponse;
+    });
+    
+    let dataRequest = $.ajax({
+        type: "GET",
+        url: "/wp-json/wp/v2/json_map_data",
+      //  data: { area: areaValue },
+        dataType: "json"
+    }).then(function (jsonResponse) {
+        jsonData = jsonResponse;
+    });
+    
+    $.when(filterRequest, dataRequest).done(function () {
+        get_from_url();     // קריאה לפי פרמטרים מה-URL    
+        // add tag to filer as marks in load
+        $('.filter_input:checked').each(function() {
+            update_checkfilters_div.call(this);
+        });
+        filter_action();        // סינון לפי פרמטרים
+        updateFilterCounts();   // עדכון מונים
+        renderFilteredResults(); 
+        filterMap(); 
+    });
+    
+
+    if($('#map-resault').length > 0){
+        govmap.createMap('map-resault', 
+            {
+                token: '7c2c6aaa-201e-4c17-afeb-3389d8df4db9',
+                showXY: true,
+                identifyOnClick: true,
+                isEmbeddedToggle: false,
+                background: 3,
+                layersMode: 1,
+                zoomButtons:false
+           });
+    }
+
+    $('.area-filter').on('change', function () {
+        handleAreaFilterLogic.call(this); // מעביר את האלמנט כ־this לפונקציה
+        update_area_filter_hidden();
+        updateFilterCounts();
+        filter_action();
+    });
+
+    $('.filter_input').on('change', function () {
+        updateFilterCounts();
+        update_checkfilters_div.call(this);
+    });
+
+    function handleAreaFilterLogic() {
+        const $this = $(this);
+        const $allCheckbox = $('input[data-area="all"]');
+        const $otherCheckboxes = $('input.area-filter').not($allCheckbox);
+        const isAll = $this.data('area') === 'all';
+
+        console.log('Clicked:', $this.prop('tagName'), $this.attr('class'));
+
+        if (isAll) {
+            if ($this.is(':checked')) {
+                $otherCheckboxes.prop('checked', false);
+            } else {
+                $otherCheckboxes.prop('checked', false);
+            }
+        } else {
+            if ($otherCheckboxes.is(':checked')) {
+                $allCheckbox.prop('checked', false);
+            }
+
+            if ($otherCheckboxes.filter(':checked').length === 0) {
+                $allCheckbox.prop('checked', true);
+            }
+        }
+    }
+
+  
+    function update_checkfilters_div(){
+        const id = $(this).attr('id');
+        const label =  $(this).attr('data-label');
+
+        if ($(this).is(':checked')) {
+            if ($(`#checkfilters .tag_filter[data-id="${id}"]`).length === 0) {
+                $('#checkfilters').append(`
+                    <span class="tag_filter" data-id="${id}">
+                     <span class="remove-tag">X</span>
+                        ${label}
+                    </span>
+                `);
+            }
+        } else {
+            $(`#checkfilters .tag_filter[data-id="${id}"]`).remove();
+        }
+         if ($('#checkfilters .tag_filter').length > 0) {
+            $('#checkfilters').addClass('has-tags');
+        } else {
+            $('#checkfilters').removeClass('has-tags');
+        }
+    }
+
+    $('#checkfilters').on('click', '.remove-tag', function () {
+        const id = $(this).parent().data('id');
+        $(`#${id}`).prop('checked', false).trigger('change'); 
+    });
+
+    function updateFilterCounts() {
+        const selectedTypes = $('.filter-group-area .area-filter:checked')
+            .map(function () {
+                return $(this).attr('name');
+            }).get();
+        const typeAllSelected = selectedTypes.includes('all');
+
+        $('.filter_input').each(function () {
+            const $checkbox = $(this);
+            const filterName = $checkbox.attr('name');
+
+            let selectedFilters = $('.filter_input:checked')
+                .not(this)
+                .map(function () {
+                    return $(this).attr('name');
+                }).get();
+
+            const simulateOnlyThisFilter = selectedFilters.length === 0;
+            if (simulateOnlyThisFilter) {
+                selectedFilters = [filterName];
+            } else {
+                selectedFilters.push(filterName);
+                selectedFilters = [...new Set(selectedFilters)];
+            }
+
+            const count = $.map(jsonFilterData, function (item) {
+                const matchesType = typeAllSelected || selectedTypes.length === 0 || selectedTypes.includes(item.type);
+                const hasAllFilters = selectedFilters.every(f => item.filters.includes(f));
+                return matchesType && hasAllFilters ? item.id : null;
+            }).length;
+
+            const $label = $(`label[for="${$checkbox.attr('id')}"]`);
+            const baseText = $label.text().replace(/\(\d+\)/, '').trim();
+            $label.text(`${baseText} (${count})`);
+
+            if (count === 0) {
+                $checkbox.prop('disabled', true);
+                $label.addClass('disabled'); // optional for CSS styling
+            } else {
+                $checkbox.prop('disabled', false);
+                $label.removeClass('disabled');
+            }
+        });
+    }
+    
+    function update_area_filter_hidden(){
+        const selectedTypes = $('.area-filter:checked')
+            .map(function () {
+                return $(this).attr('name');
+            }).get();
+
+        const showAll = selectedTypes.includes('all') || selectedTypes.length === 0;
+
+        $('.link_filter').hide(); // hide all first
+
+        if (showAll) {
+            $('.link_filter').slice(0, 6).show(); // show first 5
+        } else {
+            let count = 0;
+            $('.link_filter').each(function () {
+                if (count >= 6) return; // stop after 5
+
+                const types = $(this).data('type')?.split(',') || [];
+                const hasMatch = selectedTypes.some(type => types.includes(type));
+                if (hasMatch) {
+                    $(this).show();
+                    count++;
+                }
+            });
+        }
+    }
+
+    function createCard(id, item) {
+    return `
+        <a href="${item.link}" data-id="${id}" class="d-flex r_list_item primary_color"  data-filtetype="${item.filter_type}" data-type="${item.post_type}">
+        <img class="object-fit-cover f-shrink-0" loading="lazy" title="${item.image_title || ''}" alt="${item.image_alt || ''}" src="${item.image_url}" />
+        <div class="r_list_item_text AtlasBlack">
+            <h5>${item.name}</h5>
+            <div class="r_list_item_description"></div>
+        </div>
+        </a>
+    `;
+    }
+
+    function renderFilteredResults() {
+        $('.r_panel').each(function () {
+            const $panel = $(this);
+            const type = $panel.data('type');
+            const panelData = jsonData[type];
+    
+            $panel.find('.r_list_item').remove(); // Clear previous cards
+            $panel.find('.not_found').hide();     // Hide the "not found" message
+            $panel.find('.panel_show_more').show(); // Reset "show more" button
+            $panel.data('renderIndex', 0);        // Reset index
+    
+            if (!panelData) {
+                $panel.find('.image_loader').hide();
+                $panel.find('.panel_show_more').hide(); 
+                $panel.find('.not_found').show();  // No data at all
+                return;
+            }
+    
+            let entries = Object.entries(panelData);
+    
+            if (matchedIDs && matchedIDs.length > 0) {
+                entries = entries.filter(([id]) => matchedIDs.includes(id));
+            }
+    
+            if (entries.length === 0) {
+                $panel.find('.image_loader').hide();
+                $panel.find('.panel_show_more').hide(); 
+                $panel.find('.not_found').show(); // No matching results
+                return;
+            }
+    
+            $panel.data('panelEntries', entries);
+            $panel.find('.image_loader').hide();
+    
+            // Render the first 2
+            renderNextCards($panel, 2);
+        });
+    }
+    
+    function renderNextCards($panel, count = 2) {
+        const entries = $panel.data('panelEntries') || [];
+        let index = $panel.data('renderIndex') || 0;
+    
+        const nextEntries = entries.slice(index, index + count);
+    
+        nextEntries.forEach(([id, item]) => {
+            const card = createCard(id, item);
+            $(card).insertBefore($panel.find('.panel_show_more'));
+        });
+    
+        index += nextEntries.length;
+        $panel.data('renderIndex', index);
+    
+        if (index >= entries.length) {
+            $panel.find('.panel_show_more').hide();
+        }
+    }
+        
+
+    // Filter button click
+    $('#display_results').on('click', function () {
+        filter_action();
+        $('#clouse_filters').click();
+    });
+
+    function filter_action(){
+        const selectedFilters = $('.filter_input:checked').filter(function () {
+            return $(this).closest('.filter-group-area').length === 0;
+        }).map(function () {
+            return $(this).attr('name');
+        }).get();
+    
+        const selectedTypes = $('.filter-group-area .area-filter:checked')
+            .map(function () {
+                return $(this).attr('name');
+            }).get();
+    
+        const typeAllSelected = selectedTypes.includes('all');
+
+        matchedIDs = jsonFilterData
+            .filter(item => {
+                const matchesType = typeAllSelected || selectedTypes.length === 0 || selectedTypes.includes(item.type);
+                const hasAllFilters = selectedFilters.every(f => item.filters.includes(f));
+                return matchesType && hasAllFilters;
+            })
+            .map(item => item.id.toString()); // ודא שה-ID הוא מחרוזת אם json_map_data משתמש במפתחות כמחרוזות
+    
+        filterMap();
+        
+        renderFilteredResults(); // תשלח לפונקציית ההצגה את ה-ID-ים שמצאת
+
+        const params = new URLSearchParams();
+
+        // הוסף פילטרים רגילים
+        selectedFilters.forEach(filter => {
+            params.append('filters', filter);
+        });
+
+        // הוסף סוגים (areas)
+        selectedTypes.forEach(type => {
+            params.append('types', type);
+        });
+
+        // עדכן את ה-URL מבלי לטעון מחדש את הדף
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+
+    }
+
+    function get_from_url() {
+        const urlParams = new URLSearchParams(window.location.search);
+    
+        // סמן פילטרים רגילים
+        urlParams.getAll('filters').forEach(filterName => {
+            $(`.filter_input[name="${filterName}"]`).prop('checked', true);
+        });
+    
+        // סמן סוגים (areas)
+        urlParams.getAll('types').forEach(typeName => {
+            $(`.area-filter[name="${typeName}"]`).prop('checked', true);
+        });
+    };
+
+    $('.panel_show_more').on('click', function () {
+        const $panel = $(this).closest('.r_panel');
+        renderNextCards($panel, 2);
+    });
+
+    $('.link_filter').on('click', function (e) {
+        e.preventDefault();
+        let  ref = $(this).data('ref'); // example: "map_filters_payment"
+        if(ref == 'For_all_filters'){
+           ref = $('.link_filter').eq(1).data('ref')
+        }
+        const $targetGroup = $('[data-group="' + ref + '"]');
+        const $title = $targetGroup.find('.filter-group-title');
+        $("#more_filters_container").addClass("in");
+        $title.click();
+        
+    });
+
+    $('.filter-group-title').on('click', function () {
+        const $btn = $(this);
+        const contentId = $btn.attr('aria-controls');
+        const $content = $('#' + contentId);
+
+        const isExpanded = $btn.attr('aria-expanded') === 'true';
+
+        $btn.attr('aria-expanded', !isExpanded);
+
+        if (isExpanded) {
+            $content.slideUp(200); // סגירה חלקה
+        } else {
+            $content.slideDown(200); // פתיחה חלקה
+        }
+    });
+        
+    $('#clouse_filters').click(function() {
+        $("#more_filters_container").removeClass("in");
+    });
+
+    function filterMap() {
+        let url = baseUrl + '/wp-content/themes/joomi/images/govmap/';
+        const result = {
+            wkts: [],
+            names: [],
+            types: [],
+            showBubble: false,
+            geometryType: govmap.geometryType.POINT,
+            defaultSymbol: {
+                url: url + 'camping.svg',
+                width: 15,
+                height: 15
+            },
+            symbols: [],
+            clearExisting: true,
+            data: {
+                tooltips: []
+            }
+        };
+
+        const typeIcons = {
+            "activity": "activity.svg",
+            "camping": "camping.svg",
+            "camping_activity": "camping_activity.svg",
+            "camping_picnic": "camping_picnic.svg",
+            "camping_picnic_activity": "camping_activity_picnic.svg",
+            "camping_trip": "camping_trip.svg",
+            "camping_trip_activity": "camping_trip_activity.svg",
+            "camping_trip_picnic": "camping_trip_picnic.svg",
+            "camping_trip_picnic_activity": "camping_trip_picnic_activity.svg",
+            "picnic": "picnic.svg",
+            "picnic_activity": "picnic_activity.svg",
+            "picnic_trip": "picnic_trip.svg",
+            "picnic_trip_activity": "picnic_trip_activity.svg",
+            "trip": "trip.svg",
+            "trip_activity": "trip_activity.svg"
+        };
+
+        const showAll = !Array.isArray(matchedIDs);
+  
+        Object.values(jsonData).forEach(group => {
+            Object.entries(group).forEach(([id, details]) => {
+                if ((showAll || matchedIDs.includes(id)) && details.dots) {
+                    const position = details.dots;
+                    const iconName = typeIcons[details.filter_type] || "trip.svg";
+                    const iconUrl = url + iconName;
+        
+                    const index = result.wkts.indexOf(position);
+        
+                    if (index === -1) {
+                        // Add new item
+                        result.wkts.push(position);
+                        result.names.push(id);
+                        result.types.push(details.filter_type);
+                        result.symbols.push({
+                            url: iconUrl,
+                            width: 42,
+                            height: 42
+                        });
+                        result.data.tooltips.push(details.name);
+                    } else {
+                        // Append to name
+                        result.names[index] += "_" + id;
+                        // Only append filter_type if it's not already included
+                        const currentType = result.types[index];
+                        const newType = details.filter_type;
+                        const typeParts = currentType.split("_");
+                        if (!typeParts.includes(newType)) {
+                            result.types[index] += "_" + newType;
+                        }
+                        const combinedType = result.types[index] + ".svg";
+                        console.log(combinedType);
+        
+                        result.symbols[index].url = url + combinedType;
+                    }
+                    console.log('ddddddddd');
+                    console.log(result.symbols);
+                }
+            });
+        });
+        delete result.types;
+        dataGov = result;
+        showMap(result);
+        console.log('result');
+        console.log(result);
+    }
+
+    function buildSingleItemById(id) {
+        const index = dataGov.names.indexOf(id);
+        if (index === -1) return null;
+
+        return {
+            wkts: [dataGov.wkts[index]],
+            names: [dataGov.names[index]],
+            showBubble: dataGov.showBubble,
+            geometryType: dataGov.geometryType,
+            defaultSymbol: dataGov.defaultSymbol,
+            symbols: [dataGov.symbols[index]],
+            clearExisting: true,
+            data: {
+                tooltips: [dataGov.names[index]]
+            }
+        };
+    }
+
+    function showMap(result){
+        console.log(result);
+        res_list = [];
+        //Create data object
+        govmap.displayGeometries(result).progress(function (response)  
+        { 
+            res_list.push(response);  
+            setTimeout(function(){   
+                if (res_list[0]){
+                    progress(res_list[0]);
+                }
+                res_list = []; 
+            }, 100);
+        });  
+    }
+
+    function progress(response) {
+        let matches;
+        if (response.data.name === 'chhoose' || typeof response.data.name === "undefined") {
+            return;
+        }
+
+        $('.buble_content').empty();
+            let ids = response.data.name.split("_");
+            let first = true;
+            let dots = null;
+            const handledIds = new Set();
+
+            ids.forEach(id => {
+                if (handledIds.has(id)) {
+                // return; // דילוג אם כבר טופל
+                }
+                handledIds.add(id);
+                // נחפש את הפריט בתוך jsonData
+                let foundItem = null;
+                let postType = '';
+                
+                Object.keys(jsonData).forEach(group => {
+                    if (jsonData[group][id]) {
+                        foundItem = jsonData[group][id];
+                        postType = group;
+                    }
+                });
+
+                if (!foundItem) {
+                    console.warn("ID not found in jsonData:", id);
+                    return;
+                }
+
+                if (first) {
+                    $('.buble img').attr('src', foundItem['image_url']);
+                    dots = foundItem['dots'];
+                    console.log(foundItem);
+                    first = false;
+                }
+
+                $('.buble_content').append('<div class="'+foundItem['filter_type']+'"><a href="'+foundItem['link']+'" data-type="' + foundItem['filter_typeא'] + '" class="f-s-14 ">' + foundItem['name'] + '</a></div>');
+            });
+
+            $('.buble').addClass('in');
+
+            govmap.clearGeometriesByName(['chhoose']);  
+            chhoose = buildSingleItemById(response.data.name);  
+            chhoose['showBubble'] = false;  
+            chhoose['names'] = ['chhoose'];                    
+            url = chhoose['defaultSymbol']['url'].replace('.svg', '_on.svg');  
+            chhoose['symbols'] = [{url:''+url+'',  width:50, height:50}];
+            var res_list = [];
+            govmap.displayGeometries(chhoose).progress(function (response)  
+            { 
+                res_list.push(response);  
+                setTimeout(function(){   
+                    if (res_list[0]){
+                        progress(res_list[0]);
+                    }
+                    res_list = []; 
+                }, 100);
+            });
+
+
+            matches = dots ? dots.match(/POINT\(([-\d.]+) ([-\d.]+)\)/) : null;
+            if (matches) {
+                const x = parseFloat(matches[1]) + 21000;
+                const y = parseFloat(matches[2]) - 120000;
+                console.log("X:", x, "Y:", y);
+
+                govmap.zoomToXY({ x: x, y: y });
+
+                $("html, body").animate({
+                    //scrollTop: $(".buble").offset().top + $(".buble").outerHeight() - $(window).height()
+                }, 500);
+            }
+    }
+    $('.buble #bouble-x').on('click', function () {
+        $('.buble').removeClass('in');
+        showMap(dataGov);
+    });
+
+    $('#clear_selection').on('click', function () {
+        $('.filter_input').each(function () {
+        if (!$(this).prop('disabled')) {
+            $(this).prop('checked', false).trigger('change');
+        }
+        });
+    });
+
+    $('#list_m_view').on('click', function () {
+        //move to list view
+        $('#list-resault').removeClass('m-d-none').show();
+        $('#map-resault').hide();
+        $('#map_swich').removeClass('map').addClass('list');
+    });
+
+    $('#map_m_view').on('click', function () {
+        // move to map view
+        $('#list-resault').hide();
+        $('#map-resault').show();
+        $('#map_swich').removeClass('list').addClass('map');
+    });
+});

@@ -1,6 +1,6 @@
 
 
-export default class Categories{
+export default class Category{
 id!: number
 category! :string
 

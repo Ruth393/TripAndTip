@@ -3,6 +3,9 @@ package com.example.trip.dto;
 
 import com.example.trip.model.Category;
 import com.example.trip.model.Comment;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 
 import java.util.List;
@@ -10,14 +13,21 @@ import java.util.List;
 public class TripDTO {
 
     private Long id;
+    @NotBlank(message = "נדרש שם הטיול")
     private String name;
+    @Size(max = 1000, message = "תיאור הטיול ארוך מדי (עד 1000 תווים)")
     private String description;
+    @NotBlank(message = "עלות נדרשת")
+    @Size(max = 50, message = "פורמט העלות ארוך מדי")
     private String cost;
+    @Size(max = 50, message = "שדה התאמה ארוך מדי")
     private String match;
+    @Size(max = 255, message = "נתיב התמונה ארוך מדי")
     private String imagePath;
     private String image;
-
+    @NotNull(message = "נדרש משתמש מקושר")
     private UserToSeeDTO user;
+
 
 
     public UserToSeeDTO getUser() {
@@ -28,19 +38,19 @@ public class TripDTO {
         this.user = user;
     }
 
-    private List<Category> categories;
+    private Category category;
 
     private List<Comment> comments;
 
     public TripDTO() {
     }
 
-    public List<Category> getCategories() {
-        return categories;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public List<Comment> getComments() {

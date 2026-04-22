@@ -65,10 +65,11 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // תוקן: שני ה-origins בקריאה אחת
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:51024")); // תוקן: שני origins בקריאה אחת
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-        corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type")); // אם צריך להבחין בכותרות בתגובה
+        corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setMaxAge(3600L);
 
@@ -86,21 +87,23 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers("/h2-console/**").permitAll()
-                                .requestMatchers("/api/user/signUp","/api/user/signIn").permitAll()
+                                .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll()
                                 .requestMatchers("/api/user/get").hasRole("ADMIN")
                                 .requestMatchers("/api/user/users").hasRole("ADMIN")
+                                .requestMatchers("/api/user/me").permitAll()
                                 .requestMatchers("/api/category/addCategory").hasRole("ADMIN")
                                 .requestMatchers("/api/trip/trips").permitAll()
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/trip/uploadTrip").authenticated()
-                                .requestMatchers("/api/trip/chat").permitAll()
-                                .requestMatchers("/api/category/categorys").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/trip/chat").permitAll()
+                                .requestMatchers("/api/trip/packingList/{id}").permitAll()
+                                .requestMatchers("/api/category/categories").permitAll()
                                 .requestMatchers("/api/category/getCategoryById/{id}").permitAll()
-                                .requestMatchers("/api/comment/getCommentsByTripsId/{id}").permitAll()
+                                .requestMatchers("/api/comment/getCommentsByTripId/{id}").permitAll()
                                 .requestMatchers("/api/comment/comments").permitAll()
                                 .requestMatchers("/api/trip/getTripById/{id}").permitAll()
-                                .requestMatchers("/api/trip/tripsByCatgoriesId/{id}").permitAll()
+                                .requestMatchers("/api/trip/tripsByCategoryId/{id}").permitAll()
                                 .requestMatchers("/error").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest().authenticated()
                 );
 

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoryService } from '../../../service/category.service';
-import Categories from '../../../models/category.model';
+import Category from '../../../models/category.model';
 
 @Component({
   selector: 'app-add-category',
@@ -12,7 +12,7 @@ import Categories from '../../../models/category.model';
   styleUrl: './add-category.css',
 })
 export class AddCategory {
-  public model: Partial<Categories> = { category: '' };
+  public model: Partial<Category> = { category: '' };
   public success = false;
   public error: string | null = null;
 

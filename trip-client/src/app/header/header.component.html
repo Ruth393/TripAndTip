@@ -1,17 +1,55 @@
 <mat-toolbar color="primary">
-  
-  <span><img src="../../../../images/icons/trip.png" alt=""></span>
-  <!-- <img [src]="getImageSrc(userToSeeDTO)" alt="user image" class="user-image-material" [hidden]="!getImageSrc(userToSeeDTO)"> -->
+
+  <!-- לוגו ראשי -->
+  <img src="assets/logo.png" alt="Trip Logo" class="toolbar-logo">
+
+  <!-- תמונת פרופיל משתמש עם תפריט ההיגיון -->
+  <ng-container *ngIf="user$ | async as user">
+    <!-- container now uses handlers defined in component to introduce delays and click-toggle -->
+    <div class="profile-container"
+         [matMenuTriggerFor]="profileMenu"
+         #menuTrigger="matMenuTrigger"
+         (mouseenter)="onProfileMouseEnter(menuTrigger)"
+         (mouseleave)="onProfileMouseLeave(menuTrigger)"
+         (click)="onProfileClick(menuTrigger)">
+      <img
+        [src]="previewUrl || getProfileImage(user)"
+        class="toolbar-logo profile-image"
+        alt="תמונת פרופיל">
+    </div>
+
+    <mat-menu #profileMenu="matMenu" class="profile-menu" overlapTrigger="false" panelClass="profile-overlay-menu">
+      <div class="profile-menu-content" (mouseenter)="onProfileMouseEnter(menuTrigger)" (mouseleave)="onProfileMouseLeave(menuTrigger)">
+        <img [src]="previewUrl || getProfileImage(user)" class="profile-menu-img" alt="תמונת פרופיל">
+        <p class="profile-name">{{ user.name || user.name }}</p>
+        <p class="profile-email">{{ user.email }}</p>
+
+        <!-- שינוי תמונה -->
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          #profileInput
+          (change)="onProfileImageSelected($event)" />
+        <button mat-button color="primary" (click)="profileInput.click()">
+          שנה תמונה
+        </button>
+        <hr />
+        <button mat-button color="warn" (click)="signOut()">
+          לצאת
+        </button>
+      </div>
+    </mat-menu>
+  </ng-container>
+
   <span class="toolbar-spacer"></span>
 
-  <a mat-button routerLink="/home">Home</a>
-  <a mat-button routerLink="/list-trips">All trips</a>
-  <a mat-button routerLink="/upload-trip">Add Trip</a>
-  
+  <a mat-button routerLink="/list-trips">עמוד הבית</a>
+  <a mat-button routerLink="/upload-trip">להעלות טיול</a>
   <span class="separator-bar">|</span>
+  <ng-container *ngIf="!(user$ | async)">
+    <a mat-button routerLink="/welcome">להירשם/להכנס</a>
+  </ng-container>
+  <!-- sign out now lives inside the profile menu -->
 
-  <a mat-button routerLink="/sign-in">Sign in</a>
-  <a mat-button routerLink="/sign-up">Sign up</a>
-  <a mat-button routerLink="/sign-out">Sign-out</a>
-  
 </mat-toolbar>

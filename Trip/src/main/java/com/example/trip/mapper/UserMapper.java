@@ -16,7 +16,7 @@ public interface UserMapper {
         }
         SignInDTO dto = new SignInDTO();
         dto.setId(user.getId());
-        dto.setUserName(user.getUserName());
+        dto.setEmail(user.getEmail());
         dto.setImagePath(user.getImagePath());
 
         if (user.getImagePath() != null && !user.getImagePath().trim().isEmpty()) {

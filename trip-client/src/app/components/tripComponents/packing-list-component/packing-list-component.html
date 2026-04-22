@@ -1,0 +1,15 @@
+<div class="packing-list-container">
+  <h3>🎒 רשימת הציוד המומלצת</h3>
+
+  <!-- Loading indicator -->
+  <div class="loading-indicator" *ngIf="isLoading">
+    <span>⏳ טוען רשימת ציוד...</span>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- Packing list content -->
+  <div class="packing-content" *ngIf="!isLoading && !errorMessage" [innerHTML]="safePackingListHtml"></div>
+</div>
+

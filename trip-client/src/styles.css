@@ -2,3 +2,19 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+mat-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 64px;               /* גובה סטנדרטי */
+}
+
+mat-toolbar img.toolbar-logo {
+  height: 44px !important;    /* חובה !important כי Material לפעמים דורס */
+  width: auto;
+  margin-right: 12px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: white;          /* אם הלוגו שקוף – יראה יפה */
+  padding: 4px;
+}

@@ -1,122 +1,102 @@
-<div class="container mt-5 mb-5">
-  @if(isLoading) {
-    <div class="alert alert-info d-flex justify-content-center align-items-center" role="alert">
-      <div class="spinner-border me-2" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <span>Loading trip details...</span>
-    </div>
-  } @else if(errorMessage) {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <i class="fas fa-exclamation-circle me-2"></i>
-      {{ errorMessage }}
-      <button type="button" class="btn-close" (click)="errorMessage = null"></button>
-    </div>
-  } @else if(tripToShow) {
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card shadow-lg border-0 rounded-lg">
-          <div class="card-header bg-gradient text-white rounded-top">
-            <h2 class="mb-0">
-              <i class="fas fa-map-pin me-2"></i>Trip Details
-            </h2>
-          </div>
+<div class="details-container">
 
-          <div class="card-body p-4">
-            <form #addForm="ngForm">
-              <!-- Trip Name -->
-              <div class="mb-4">
-                <label for="tripName" class="form-label fw-bold">
-                  <i class="fas fa-heading me-2 text-primary"></i>Trip Name
-                </label>
-                <input 
-                  id="tripName"
-                  type="text" 
-                  class="form-control form-control-lg"
-                  [class.is-invalid]="nameControl.invalid && nameControl.touched"
-                  [(ngModel)]="tripToShow.name" 
-                  name="name" 
-                  required 
-                  minlength="5"
-                  #nameControl="ngModel"
-                  placeholder="Enter trip name">
-                <div class="invalid-feedback d-block" *ngIf="nameControl.invalid && nameControl.touched">
-                  @if(nameControl.errors?.['required']) {
-                    <i class="fas fa-times-circle me-1"></i>Trip name is required
-                  }
-                  @if(nameControl.errors?.['minlength']) {
-                    <i class="fas fa-times-circle me-1"></i>Trip name must be at least 5 characters
-                  }
-                </div>
-              </div>
+  <h1 class="title">פרטי טיול</h1>
 
-              <!-- Description -->
-              <div class="mb-4">
-                <label for="tripDescription" class="form-label fw-bold">
-                  <i class="fas fa-file-alt me-2 text-info"></i>Description
-                </label>
-                <textarea 
-                  id="tripDescription"
-                  class="form-control form-control-lg"
-                  [(ngModel)]="tripToShow.description" 
-                  name="description"
-                  placeholder="Enter trip description"
-                  rows="4"></textarea>
-              </div>
+  <!-- Loading -->
+  <div *ngIf="!TripToShow" class="loading text-center">
+    טוען פרטי טיול...
+  </div>
 
-              <!-- Cost and Match Row -->
-              <div class="row mb-4">
-                <div class="col-md-6">
-                  <label for="tripCost" class="form-label fw-bold">
-                    <i class="fas fa-dollar-sign me-2 text-success"></i>Cost
-                  </label>
-                  <div class="input-group input-group-lg">
-                    <span class="input-group-text bg-light">$</span>
-                    <input 
-                      id="tripCost"
-                      type="number" 
-                      class="form-control"
-                      [(ngModel)]="tripToShow.cost" 
-                      name="cost"
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01">
-                  </div>
-                </div>
+  <ng-container *ngIf="TripToShow">
 
-                <div class="col-md-6">
-                  <label for="tripMatch" class="form-label fw-bold">
-                    <i class="fas fa-link me-2 text-warning"></i>Match
-                  </label>
-                  <input 
-                    id="tripMatch"
-                    type="text" 
-                    class="form-control form-control-lg"
-                    [(ngModel)]="tripToShow.match" 
-                    name="match"
-                    placeholder="Enter match details">
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="d-flex gap-3 mt-5">
-                <button 
-                  type="button" 
-                  (click)="close()" 
-                  class="btn btn-primary btn-lg flex-grow-1">
-                  <i class="fas fa-times me-2"></i>Close
-                </button>
-                <button 
-                  type="button" 
-                  (click)="goPreviousPage()" 
-                  class="btn btn-outline-secondary btn-lg flex-grow-1">
-                  <i class="fas fa-arrow-left me-2"></i>Back to Welcome
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+    <!-- Owner section -->
+    <div class="owner-section" *ngIf="TripToShow.user">
+      <img class="user-avatar" [src]="getUserImage()" alt="תמונת משתמש">
+      <div class="owner-info">
+        <div class="added-by"></div>
+        <div class="owner-name">{{ TripToShow.user.userName }}</div>
       </div>
     </div>
-  }
+
+    <!-- Trip image -->
+    <div class="trip-image-section">
+      <img class="trip-image" [src]="getTripImage()" alt="תמונת הטיול"
+           *ngIf="TripToShow.image || TripToShow.imagePath; else noTripImg">
+      <ng-template #noTripImg>
+        <div class="no-trip-img">אין תמונה לטיול זה</div>
+      </ng-template>
+    </div>
+
+    <!-- Trip info -->
+    <div class="trip-info-container">
+      <div class="form-group">
+        <label>שם טיול</label>
+        <input type="text" [value]="TripToShow.name" readonly>
+      </div>
+      <div class="form-group">
+        <label>תיאור</label>
+        <textarea rows="3" readonly>{{ TripToShow.description }}</textarea>
+      </div>
+      <div class="form-group">
+        <label>עלות</label>
+        <input type="text" [value]="TripToShow.cost || 'לא צוין'" readonly>
+      </div>
+      <div class="form-group">
+        <label>התאמה</label>
+        <input type="text" [value]="TripToShow.match || 'לא צוין'" readonly>
+      </div>
+      <div class="form-group">
+        <label> איזור הטיול</label>
+        <input type="text" [value]="TripToShow.category!.category || 'אזור לא מוגדר'" readonly>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Packing list + chat -->
+    <div class="ai-section">
+
+      <!-- Packing list -->
+      <div class="packing-list-wrapper">
+        <app-packing-list *ngIf="TripToShow?.id" [tripId]="TripToShow.id"></app-packing-list>
+      </div>
+
+      <!-- Chat section -->
+      <div class="chat-section">
+        <!-- <app-trip-chat [tripId]="TripToShow.id"></app-trip-chat> -->
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Comments -->
+    <div class="comments-main-section">
+      <div class="comments-header">
+        <h3>תגובות ({{ commentsCount }})</h3>
+        <button class="btn-add-comment" (click)="showAddForm = !showAddForm">
+          {{ showAddForm ? 'בטל' : 'הוסף תגובה' }}
+        </button>
+      </div>
+
+      <app-add-comment 
+        *ngIf="showAddForm"
+        [tripId]="TripToShow.id"
+        (commentAdded)="onCommentAdded($event)">
+      </app-add-comment>
+
+      <app-list-comments 
+        #listCommentsRef
+        [id]="TripToShow.id"
+        (commentsCountChange)="onCommentsCountChange($event)">
+      </app-list-comments>
+    </div>
+
+    <!-- Back button -->
+    <div class="button-group">
+      <button type="button" (click)="goPreviousPage()" class="btn btn-secondary">
+        חזרה
+      </button>
+    </div>
+
+  </ng-container>
 </div>

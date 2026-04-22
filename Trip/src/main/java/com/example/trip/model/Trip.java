@@ -3,6 +3,9 @@ package com.example.trip.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.HashSet;
 import java.util.List;
@@ -14,23 +17,28 @@ public class Trip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @NotBlank(message = "נדרש שם הטיול")
     private String name;
+    @Size(max = 1000, message = "תיאור הטיול ארוך מדי (עד 1000 תווים)")
     private String description;
+    @NotBlank(message = "עלות נדרשת")
+    @Size(max = 50, message = "פורמט העלות ארוך מדי")
     private String cost;
+    @Size(max = 50, message = "שדה התאמה ארוך מדי")
     private String match;
-    private String image;
+    @Size(max = 255, message = "נתיב התמונה ארוך מדי")
     private String imagePath;
+    private String image;
 
     @ManyToOne
+    @JsonIgnore
+    @NotNull(message = "נדרש משתמש מקושר")
     private Users user;
 
-    @ManyToMany
-    @JsonManagedReference
-    @JsonIgnore
-    private List<Category> categories;
+    @ManyToOne
+    private Category category;
 
-    @OneToMany(mappedBy = "trips")
+    @OneToMany(mappedBy = "trip")
     @JsonIgnore
     private List<Comment> comments;
 
@@ -100,12 +108,12 @@ public class Trip {
         this.user = user;
     }
 
-    public List<Category> getCategories() {
-        return categories;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public List<Comment> getComments() {

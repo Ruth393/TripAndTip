@@ -7,18 +7,22 @@
     <mat-card-content>
       <form #SignInForm="ngForm">
         <mat-form-field appearance="fill">
-          <mat-label>Name</mat-label>
+          <mat-label>Email</mat-label>
           <input
             matInput
-            type="text"
-            [(ngModel)]="toSignIn.userName"
-            name="userName"
-            #userName="ngModel"
+            type="email"
+            [(ngModel)]="toSignIn.email"
+            name="email"
+            #email="ngModel"
             required
+            email
           />
-          @if(userName.errors && userName.touched){
-            @if(userName.errors['required']){
+          @if(email.errors && email.touched){
+            @if(email.errors['required']){
               <mat-error>שדה חובה</mat-error>
+            }
+            @if(email.errors['email']){
+              <mat-error>כתובת אימייל לא חוקית</mat-error>
             }
           }
         </mat-form-field>

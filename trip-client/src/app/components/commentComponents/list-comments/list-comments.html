@@ -1,0 +1,19 @@
+<div class="loading" *ngIf="isLoading">טוען תגובות...</div>
+
+
+<div class="no-comments" *ngIf="!isLoading && comments.length === 0">
+עדיין אין תגובות. היה הראשון להגיב!
+</div>
+
+
+<div class="comments-list" *ngIf="!isLoading && comments.length > 0">
+<div class="comment-item" *ngFor="let c of comments">
+<img [src]="getUserAvatar(c)" alt="אווטאר" class="comment-avatar">
+<div class="comment-content">
+<div class="comment-user">{{ c.user.userName }}</div>
+<div class="comment-text">{{ c.comment }}</div>
+<div class="comment-date">{{ c.date | date: 'medium':'he' }}</div>
+</div>
+</div>
+<div #commentsEnd></div>
+</div>

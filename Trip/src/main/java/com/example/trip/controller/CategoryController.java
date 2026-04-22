@@ -35,8 +35,8 @@ public class CategoryController {
         }
     }
 
-    @GetMapping("/categorys")
-    public ResponseEntity<List<Category>> getCategorys(){
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getCategories(){
         try {
             return new ResponseEntity<>(categoryRepository.findAll(),HttpStatus.OK);
         } catch (Exception e) {

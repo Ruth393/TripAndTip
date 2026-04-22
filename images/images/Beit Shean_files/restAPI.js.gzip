@@ -1,0 +1,1362 @@
+var translateJson;
+var buket_url;
+var w;
+var type = 'post';
+jQuery(document).ready(function($) {
+
+    buket_url = $('body').attr('data-buket');
+    w = $(document).width();
+    if ($('body').hasClass('category') ||( $("body").attr("class").includes("term-")))  {
+        type = 'category';
+    }
+    objectId = $('body').attr('data-id'); 
+    buket_url = $('body').attr('data-buket');
+
+    $.ajax({
+        type: "GET",
+        url: "/wp-json/wp/v2/translate_api", 
+        data: {
+            lang: 'he'
+        },       
+        success: function(jsonResponse) {
+            translateJson = jsonResponse;
+            events_calender(translateJson);
+        },
+        error: function(xhr, status, error) {
+            console.log("Error: " + error);
+        }
+    });
+
+    
+    if($('.home_news').length > 0){
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_news",        
+            success: function(jsonResponse){
+                var obj = jQuery.parseJSON(jsonResponse);
+                var i=1;
+                var content;
+                $.each(obj, function(key,value) {
+                    $('#home_news'+i+' .image img').attr('src',value.image_url);
+                    $('#home_news'+i+' .image img').attr('alt',value.image_alt);
+                    $('#home_news'+i+' .image img').attr('title',value.image_title);
+                    $('#home_news'+i).attr('href',value.link);
+                    $('#home_news'+i).attr('aria-label',value.title);
+                    $('#home_news'+i+' h3').html(value.title); 
+                    $('#home_news'+i+' .date').text(value.date);                    
+                    updateNewsContent(i, value, w);
+                    i+=1;
+               });
+               init_fancybox();
+               $('.home_news').closest('.news_home').addClass('in');
+            }
+        });
+    }  
+
+    if($('.icons_container').length > 0){
+        var obj;
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_icons",        
+            success: function(jsonResponse){
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                }
+                
+                $.each(obj, function(key,value) { 
+                    var class_bold =(value.bold_text == true) ? ' bold' : '';
+                    var elemnt = '<a href='+value.icon_link+' class="icon_wrap d-ib"><img loading="lazy" src="'+value.icon_url+'" alt="'+value.icon_alt+'" class="rounded-circle object-fit-contain"><span class="d-block h3-new'+class_bold+'">'+value.icon_text+'</span></a>';
+                    $('.icons_container').append(elemnt);
+                });
+            }
+        });
+        $('.icons_wrap').addClass('in');
+    }
+
+    if ($('#top_big_images').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_top_images",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+
+                var i = 0;
+                $.each(obj, function(key, value) {
+                    var elemnt = '<div class="swiper-slide"><a aria-label="'+ value.white_text +'" href="'+ value.link +'"><img src="' + value.top_image_url + '" alt="' + value.top_image_alt + '" title="'+ value.top_image_title +'" class="br-10 w-100 object-fit-cover"><div class="recommendations_content"><h3 class="recommendations_title primary_background white_color h1-new br-10 d-block">' + value.green_text + '</h3><h4 class="white_background primary_color h2-new fw-900 br-10 d-ib">' + value.white_text + '</h4></div></a></div>';
+                   
+                    i += 1;
+                    $('#top_big_images').append(elemnt); 
+                });
+
+                if (i > 1) {
+                    $('#top_big_images').addClass('swiper-wrapper');
+                    $('#top_big_images_2.swiper-container').append('<div class="swiper-button-next"></div>');
+                    $('#top_big_images_2.swiper-container').append('<div class="swiper-button-prev"></div>');
+                    $('#top_big_images_2.swiper-container').append('<div class="pagination"><div class="swiper-pagination"></div></div>');
+
+                    recommendationsSwiper('#top_big_images_2',1,1,1,'#top_big_images_2',true,15,true,1200);
+                }
+                $('#top_big_images').closest('.new_container').addClass('in');
+            }
+        });
+    }
+
+    if ($('#top_small_images_bottom').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_small_top_images",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+
+                var i = 0;
+                $.each(obj, function(key, value) {
+                    if(w > 767){
+                        $('.t_small_image').eq(i).append('<a class="d-block" href="'+value.link+'"><img alt="'+value.top_image_alt+'" title = "'+value.top_image_title+'" class="object-fit-cover" src="'+value.top_image_url+'"><h3 class="primary_background white_color br-10 ">'+value.green_text+'</h3></img></a><a class="d-block" href="'+value.link+'"><h4 class="black_color bold h3-new">'+value.white_text+'</h4></a>');  
+                    }else{
+                        $('#top_small_images_bottom .t_small_image').eq(i).append(
+                            '<a class="d-block" href="' + value.link + '">' +
+                            '<img title="' + value.top_image_title + '" alt="' + value.top_image_alt + '" class="object-fit-cover" src="' + value.top_image_url + '">' +
+                            '<h3 class="primary_background white_color br-10 ">' + value.green_text + '</h3>' +
+                            '</a>' +
+                            '<a class="d-block" href="' + value.link + '">' +
+                            '<h4 class="black_color bold h3-new">' + value.white_text + '</h4>' +
+                            '</a>'
+                        );
+                    
+                    }
+                    i+=1;
+                });
+
+                if(w < 768){ 
+                    $('#top_small_images_bottom').addClass('swiper-wrapper');
+                    $('#top_small_images_bottom').wrap('<div id="top_small_images_bottom_2" class="swiper-container"></div>');
+                    recommendationsSwiper('#top_small_images_bottom_2',2.2,2.2,2.2,'#top_small_images_bottom_2');
+                }
+                $('#top_small_images_bottom').closest('new_container').addClass('in');
+            }
+        });
+    }
+
+    if ($('#first_banner').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/first_banner",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+                $('#first_banner a').attr('href',obj.link_banner);
+                $('#first_banner a').attr('aria-label',obj.link_title);
+                if(w < 768){   
+                    $('#first_banner img.d-d-none').parent().addClass(obj.class);
+                    $('#first_banner img.d-d-none').attr('src',obj.url_banner_mobile);
+                    $('#first_banner img.d-d-none').attr('alt',obj.alt_banner_mobile);
+                    $('#first_banner img.d-d-none').attr('title',obj.title_banner_mobile);
+                }else{
+                    $('#first_banner img.m-d-none').attr('src',obj.url_banner);
+                    $('#first_banner img.m-d-none').attr('alt',obj.alt_banner);
+                    $('#first_banner img.d-d-none').attr('title',obj.title_banner);
+                }
+
+                $('#first_banner').addClass('in');
+            }
+        });
+    }
+
+    if ($('#second_banner').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/second_banner",
+            success: function(jsonResponse) {
+                $('.image_loader').css('display', 'none');
+
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+                $('#second_banner a').attr('href',obj.link_banner);
+                $('#second_banner a').attr('aria-label',obj.link_title);
+                if(w < 768){ 
+                    
+                    $('#second_banner img.d-d-none').attr('src',obj.url_banner_mobile);
+                    $('#second_banner img.d-d-none').parent().addClass(obj.class);
+                    $('#second_banner img.d-d-none').attr('alt',obj.alt_banner_mobile);
+                    $('#second_banner img.d-d-none').attr('title',obj.title_banner_mobile);
+                }else{
+                    $('#second_banner img.m-d-none').attr('src',obj.url_banner);
+                    $('#second_banner img.m-d-none').attr('alt',obj.url_banner);
+                    $('#second_banner img.d-d-none').attr('title',obj.title_banner);
+                }
+                $('#second_banner').addClass('in');
+                
+            }
+        });
+    }
+
+    if ($('#personal_area').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/personal_area",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }     
+                $('#personal_area img').attr('src',obj.url_icon);     
+                $('#personal_area img').attr('alt',obj.alt_icon);         
+                $('#personal_area .durk_button_link').attr('href',obj.personal_btn_link);               
+                if(w < 992){   
+                    $('#personal_area .h1-new').text(obj.personal_title_m);
+                    $('#personal_area .durk_button_link').text(obj.personal_btn_txt_m);
+                    $('#personal_area .sub_text').text(obj.personal_description_m);
+                }else{
+                    $('#personal_area .h1-new').text(obj.personal_title);
+                    $('#personal_area .durk_button_link').text(obj.personal_btn_txt);
+                    $('#personal_area .sub_text').text(obj.personal_description);
+                }
+                if(obj.personal_title && w > 992|| obj.personal_title_m && w < 992)
+                    $('#personal_area').addClass('in');
+                else
+                    $('#personal_area').addClass('not-height');                
+            }
+        });
+    }
+
+    var area_trips;
+    if ($('.locatins_tab').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_area",
+            success: function(jsonResponse) {
+                $('.image_loader').css('display', 'none');
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+
+                i=1;
+                $.each(obj[0], function(key, value) {
+                    $('.locatins_tab button').eq(i).text(value.name);
+                    $('.locatins_tab button').eq(i).attr('data-id',value.id);
+                    $('.locatins_tab button').eq(i).attr('data-img',value.image);
+                    $('.locatins_tab button').eq(i).attr('data-slug',value.slug);
+                    i+=1;
+                });
+                i=0;
+                area_trips = obj[1];
+                $.each(area_trips, function(key, value) {
+                    $('.area_trips').append('<a data-slug="'+value.slug+'" href="'+value.link+'" data-parent="'+value.parent+'" class="area_trip area_trips_card opacity-0 in br-10"><img title="'+value.image_title+'" loading="lazy" src="'+value.image+'" alt="'+value.image_alt+'" class="object-fit-cover br-10"><h4 class="fs-18 m-font-16 black_color">'+value.name+'</h4><p class="fs-16 m-font-14 black_color">'+value.sub_title+'</p></a>');
+                    $('.area_trips_mobile').append('<div class="area_trip d-d-none m-d-none" data-slug="'+value.slug+'" href="'+value.link+'"><h4>'+value.name+'</h4><p>'+value.sub_title+'</p></div>');
+                    i+=1;
+                });
+                if(w < 992){
+                    $('#area-section .map').removeClass('in');
+                }                    
+                if(w < 768){
+                    //$('.locatins_tab [data-slug="all"]').css('display','none');
+                    //$('.locatins_tab [data-slug="area-north"]').click();
+                    $('.area_trips .area_trips_card').addClass('swiper-slide');
+                    
+                    //$('#area-section .locatins_tab [data-slug="area-north"]').click();  
+                    recommendationsSwiper('.area_trips_c',4,3,2.7,'.area_trips_c',false,30);                 
+                }else{  
+                    $('.area_trips_wrap .swiper-button-prev').hide();
+                    $('.area_trips_wrap .swiper-button-next').hide();  
+                }
+                $('#area-section').addClass('in');
+            }
+        });
+    }
+
+    var area_trips;
+    if ($('#camping-section').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/home_campings",
+            success: function(jsonResponse) {
+                $('.image_loader').css('display', 'none');
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+
+                var j=0;
+                var i = 0;
+                $.each(obj, function(key, value) {
+                    $('.campings-box').append('<div id="camping'+i+'" class="primary_color card swiper-slide rimary_color"><a href="'+value.link+'" name="camping'+i+'" aria-label="'+decodeURIComponent(value.name)+'"><div class="relative"><img loading="lazy" class="card-img-big br-10" src="'+value.image_url+'" alt="'+value.image_alt+'" title="'+value.image_title+'" class="object-fit-cover br-10"><h3 class="label second_green_background br-10 absolute fs-16 m-font-14">'+value.area+'</h3></div><h4 class="h3-new fw-700 m-font-16">'+decodeURIComponent(value.name)+'</h4></a><div class="icons_texts_wrap"></div></div>');
+                    
+                    for(j=0; j<3; j++){
+                        var tag_img = 'tag_img'+j;
+                        var tag = 'tag'+j;
+                        if(value[tag_img] !== undefined)
+                            $('#camping'+i+' .icons_texts_wrap').append('<div class="icon_text"><img src="'+value[tag_img]+'" alt="'+value[tag]+'"><span class="fs-18 m-font-14">'+value[tag]+'</span></div></div>');
+                    }
+                    i+=1;
+                });
+ 
+                if(w < 768){
+                    recommendationsSwiper('#camps-section',4,3,1.7,'#camping-section',false,30);
+                    $('#camping-section .swiper-button-next').hide();
+                    $('#camping-section .swiper-button-prev').hide();
+                }else{
+                    recommendationsSwiper('#camps-section',4,3,1.7,'#camping-section',true,20);
+                }
+                $('#camping-section').addClass('in');
+
+            }
+        });
+    }
+
+    if ($('#activity-home').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/count_activiy",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    $('#activity-home .button-left-div a').text(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+            }
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/area_parent",
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+                var i = 1;
+                $.each(obj, function(key, value) {
+                    $('#activity-home .locatins_tab button').eq(i).text(value.name);
+                    $('#activity-home .locatins_tab button').eq(i).attr('data-id',value.id);
+                    i+=1;  
+                });
+                $('#activity-home').addClass('in');
+                i = 1;
+                $.each(obj, function(key, value) {
+                    checkIfActivity(value.id,i);
+                    i+=1;
+                });
+            }
+        });
+        $url =  "he_activityAreaall.json";
+        loadAcitivty($url);
+      
+    }
+
+    function checkIfActivity(id,i){
+        $url = "he_activityArea"+id+".json";
+        $url = buket_url + $url;
+        var first = 1;
+        console.log($url);
+        $.ajax({
+            type: "GET",  
+            url : $url,
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                    if(obj.length == 0) {
+                        $('#activity-home .locatins_tab button').eq(i).prop("disabled", true);
+                    }else{
+                        //if(w <992 && $('#activity-home .locatins_tab button.active[data-id!="all"]').length == 0){
+                          //  $('#activity-home .locatins_tab button').eq(i).click();
+                        //}
+                    }
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return;
+                }
+            }
+        });
+    }
+
+    function recommendationsSwiper(
+        container, 
+        slidesPerView, 
+        slidesPerViewLeptop = slidesPerView, 
+        slidesPerViewMobile = slidesPerView, 
+        parentContainer = container, 
+        loop = false, 
+        spaceBetween = 15, 
+        autoplay = false,
+        speed = 300,
+        spaceBetweenMobile = spaceBetween
+
+    ) {
+        var next = parentContainer + ' .swiper-button-next';
+        var prev = parentContainer + ' .swiper-button-prev';  
+        var pagination = parentContainer + ' .swiper-pagination';
+    
+        if(autoplay){
+            const $toggleBtn = $('<button class="button" id="swiper-toggle" aria-label="pause play"><i class="fa fa-pause" aria-hidden="true"></i></button>');
+            $(parentContainer + ' .pagination').append($toggleBtn);
+        }
+
+        // Append the toggle button to the container
+        
+        const swiperOptions = {
+            loop: loop,                       
+            direction: 'horizontal',
+            slidesPerView: slidesPerViewMobile,
+            spaceBetween: spaceBetweenMobile,
+            navigation: {
+                nextEl: next,
+                prevEl: prev,
+            },
+            pagination: {
+                el: pagination,
+                clickable: true,
+            },
+            breakpoints: {
+                768: {
+                    spaceBetween: spaceBetweenMobile,
+                    slidesPerView: slidesPerViewLeptop,
+                },
+                1199: {
+                    spaceBetween: spaceBetween,
+                    slidesPerView: slidesPerView,
+                },
+            },
+            speed: speed,
+        };
+    
+        if (autoplay) {
+            swiperOptions.autoplay = {
+                delay: 3000,
+                disableOnInteraction: false,
+            };
+        }
+    
+        // Create and return the Swiper instance
+        const swiperInstance = new Swiper(container + '.swiper-container', swiperOptions);
+    
+        // Set up play/pause toggle
+        let isPlaying = true;
+
+        $(document).on("click", "#swiper-toggle", function () {
+            if (isPlaying) {
+                swiperInstance.autoplay.stop();
+                $(this).text('Play');
+                $(this).html('<i class="fa fa-play" aria-hidden="true"></i>');
+            } else {
+                swiperInstance.autoplay.start();
+                $(this).text('Pause');
+                $(this).html('<i class="fa fa-pause" aria-hidden="true"></i>');
+            }
+            isPlaying = !isPlaying;
+        });
+    
+        return swiperInstance;
+    }
+
+    function loadAcitivty($url){
+        $url = "/wp-content/uploads/jsonfiles/" + $url;
+        console.log($url);
+        $.ajax({
+            type: "GET",  
+            url : $url,
+            success: function(jsonResponse) {
+                var obj;
+                try {
+                    obj = JSON.parse(jsonResponse);
+                } catch (error) {
+                    console.error("Failed to parse JSON:", error);
+                    return; // Exit if parsing failed
+                }
+                var j=0;
+                var i = 0;
+                
+                $('.activity_container').fadeOut(300, function() {
+                    $(this).html(""); // Clear content AFTER fade out
+                
+                    // Append new content
+                    $(this).append('<div id="activity-swiper" class="swiper-container" dir="rtl"><div class="activity-box swiper-wrapper primary_color" dir="rtl"></div></div><div class="swiper-button-prev"></div><div class="swiper-button-next"></div>');
+                
+                    $.each(obj, function(key, value) {
+                        var sub_title = value.sub_title ? `<span class="details fs-20 m-font-14 d-block">${value.sub_title}</span>` : '';
+                
+                        $('.activity-box').append(`
+                            <div id="activity${i}" dir="rtl" data-id="${value.id}" class="card swiper-slide primary_color">
+                                <a name="activity${i}" href="${value.activity_link}" aria-label="${decodeURIComponent(value.activity_title)}">
+                                    <div class="relative">
+                                        <img loading="lazy" class="card-img-big br-10 object-fit-cover" src="${value.image_url}" 
+                                            alt="${value.image_alt}" title="${value.image_title}">
+                                        <h3 class="label second_green_background br-10 absolute fs-16 m-font-14">${value.area}</h3>
+                                    </div>
+                                    <h4 class="h3-new fw-700 m-font-16">${decodeURIComponent(value.name)}</h4>
+                                    ${sub_title}
+                                </a>
+                                <div class="dates fs-16 m-font-14 d-block">${value.dates}</div>
+                                <div class="icons_texts_wrap"></div>
+                            </div>
+                        `);
+                
+                        let activityEl = $(`#activity${i} .icons_texts_wrap`);
+                
+                        if (value.location_name) {
+                            if (value.lcation_link) {
+                                activityEl.append(`<a name="location_activity" href="${value.lcation_link}" class="icon_text">
+                                    <img src="${value.lcation_icon}" alt="${value.location_name}">
+                                    <span class="fs-18 m-font-14">${value.location_name}</span>
+                                </a>`);
+                            } else {
+                                activityEl.append(`<div class="icon_text">
+                                    <img src="${value.lcation_icon}" alt="${value.location_name}">
+                                    <span class="fs-18 m-font-14">${value.location_name}</span>
+                                </div>`);
+                            }
+                        }
+                        if (value.price_text) {
+                            activityEl.append(`<div class="icon_text">
+                                <img src="${value.price_icon}" alt="${value.price_text}">
+                                <span class="fs-18 m-font-14">${value.price_text}</span>
+                            </div>`);
+                        }
+                        if (value.tag_text) {
+                            activityEl.append(`<div class="icon_text">
+                                <img src="${value.tag_icon}" alt="${value.tag_text}">
+                                <span class="fs-18 m-font-14">${value.tag_text}</span>
+                            </div>`);
+                        }
+                
+                        i++;
+                    });
+                    console.log(i);
+                    loop =  i < 5 ? false : true;
+                    console.log(loop);
+                    if (w > 768) {
+                        recommendationsSwiper('#activity-swiper',4,3,'auto','#activity-home',loop,30);
+                    } else {
+                        recommendationsSwiper('#activity-swiper', 4, 3, 1.74, '#activity-home', false, 20);
+                    }
+                
+                    $(this).fadeIn(300); // Fade in AFTER content is added
+                });
+                if((i < 4 && w <= 1024) || (i < 5 && w > 1024) ||  w < 768){
+                    $('#activity-home .swiper-button-next').hide();
+                    $('#activity-home .swiper-button-prev').hide();
+                }
+                $('#activity-home').addClass('in');                
+            }
+        });
+    }
+
+    $('#activity-home .locatins_tab button').click(function(){
+        if ($(this).hasClass("active")) {  
+            return;  
+        }
+        $('#activity-home .locatins_tab button').removeClass('active');
+        $(this).addClass('active');
+        var id = $(this).attr('data-id');
+        $('.activity-box').empty();
+        loadAcitivty("he_activityArea"+id+".json");
+        
+    });
+
+    $('#area-section .locatins_tab button').click(function(){
+        if ($(this).hasClass("active")) {
+            return;
+        }
+        $('#area-section .locatins_tab button').removeClass('active');
+        $(this).addClass('active');
+        $('#area-section').attr('active-area',$(this).attr('data-id'))
+        $('#area-section').css('background-image','linear-gradient(rgb(255 255 255) 28%, rgb(255 255 255 / 93%) 33%, rgb(0, 0, 0, 0.6)100%), url('+$(this).attr('data-img')+')');
+        var id = $(this).attr('data-id');
+        if(w > 768){
+            let $image = $('#all-map svg');
+            //$image.addClass('zoomed');
+            $('#all-map').attr('data-area',$(this).attr('data-slug')); 
+        }
+        if(w <= 768){
+            $('#area-section .area_trips_wrap').html('');
+            $('#area-section .area_trips_wrap').append('<div class="area_trips_c swiper-container has_scroll swiper-container-rtl fs-0"><div class="area_trips d-flex swiper-wrapper"></div><div class="swiper-button-next"></div><div class="swiper-button-prev"></div></div>');            
+            i = 0;
+            $.each(area_trips, function(key, value) {
+                if(value.parent == id || id=='-1'){
+                $('#area-section .area_trips').append('<a name="area_trips" href="'+value.link+'" data-slug="'+value.slug+'" data-parent="'+value.parent+'" class="swiper-slide area_trips_card in br-10"><img loading="lazy" src="'+value.image+'" alt="'+value.name+'" title="'+value.image_alt+'" class="object-fit-cover br-10"><h4 class="fs-18 m-font-16 black_color">'+value.name+'</h4><p class="fs-16 m-font-14 black_color">'+value.sub_title+'</p></a>');
+                    i+=1;
+                }
+            });
+            if(i >2){  
+                recommendationsSwiper('.area_trips_c',4,3,2.7,'.area_trips_c',false,30);
+            }
+        }else{
+            if(id == -1){ 
+                $('.area_trips_card').addClass('in');
+                $('.area_trips_wrap').addClass('has_scroll');
+            }else{
+                $('.area_trips_card').removeClass('in');
+                $('.area_trips_card[data-parent="'+id+'"]').addClass('in');
+                $('.area_trips_wrap').removeClass('has_scroll');
+            }
+        }
+    });
+
+    let pageId = $('#knowledge_top_images').attr('data-pge-id');
+    $(".banner").each(function () {  
+        let banner = $(this);
+        let groupId = banner.data("group");
+        $.ajax({
+            url: `/wp-json/custom/v1/banner/${groupId}/${pageId}`,
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                let target = data.new_tab === '_blank' ? ' target="_blank"' : '';
+                if(w > 768){
+                    if(data.link == ''){
+                        banner.append('<div href="'+data.link+'"><img d-block alt="'+data.alt_banner+'" title="'+data.caption_banner+'" src="'+data.url_banner+'"/></div>');
+                    }else{
+                        banner.append('<a href="'+data.link+'"'+target+'><img alt="'+data.alt_banner+'" title="'+data.caption_banner+'" src="'+data.url_banner+'"/></a>');
+                    }
+                }else{
+                    let currentId = banner.attr('id');
+                    if(data.link == ''){
+                        banner.append('<div><img alt="'+data.alt_m_banner+'" title="'+data.caption_m_banner+'" src="'+data.url_m_banner+'"/></div>')
+                    }else{
+                        banner.append('<a href="'+data.link+'"'+target+'><img alt="'+data.alt_m_banner+'" title="'+data.caption_m_banner+'" src="'+data.url_m_banner+'"/></a>')
+                    }
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", error);
+            }
+        });
+    });
+
+    $("#buttons_knowledge").each(function () {  
+        $.ajax({
+            url: `/wp-json/custom/v1/buttons_knowledge?page_id=${pageId}`,
+            method: "GET",
+            dataType: "json",
+            success: function (data) { 
+                let formattedText = data.button3_text.replace(/\r?\n/g, '<br>'); 
+                if(w < 768){
+                    formattedText = data.button3_text_mobile.replace(/\r?\n/g, '<br>');
+                }
+                let target1 = data.button1_link_new_tab === '_blank' ? ' target="_blank"' : '';
+                let target2 = data.button2_link_new_tab === '_blank' ? ' target="_blank"' : '';
+                let target3 = data.button3_text_new_tab === '_blank' ? ' target="_blank"' : '';
+                let html_l = `<div class="d-flex space-between">
+                    <div class="k_right">
+                    ${data.button1_link ? 
+                        `<a class="fs-26 primary_background white_color w-100 d-block" href="${data.button1_link}"${target1}>${data.button1_text}</a>` : 
+                    `<span class="fs-26 primary_background primary_color w-100 d-block">${data.button1_text}</span>`}
+                
+                ${data.button2_link ? 
+                    `<a class="fs-26 second_green_background primary_color w-100 d-block" href="${data.button2_link}"${target2}>${data.button2_text}</a>` : 
+                    `<span class="fs-26 second_green_background primary_color w-100 d-block">${data.button2_text}</span>`}
+                    </div>
+                    <div class="k_left">
+                        ${(data.button3_link) ? 
+                        `<a class="fs-26 d-flex primary_background white_color w-100 d-block" href="${data.button3_link}"${target3}>
+                            <img title="${data.img_title}" alt="${data.img_alt}" src="${data.button3_img_url}"/>
+                            <div class="button3_t">${formattedText}</div> 
+                        </a>` : 
+                        `<span class="fs-26 d-flex primary_background white_color w-100 d-block">
+                            <img title="${data.img_title}" alt="${data.img_alt}" src="${data.button3_img_url}"/>
+                            <div class="button3_t">${formattedText}</div> 
+                        </span>`}
+                    </div>
+                </div>`;
+
+            $('#buttons_knowledge').append(html_l);
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", error);
+            }
+        });
+    });
+
+    if ($('.new_knowledge').length > 0) {
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/custom/v1/six_news",      
+            success: function(jsonResponse){
+                // Assuming you want to append each post to a specific container
+                var container1 = $('.new_k_right'); // Container for the first 4 posts
+                var container2 = $('.new_k_left'); // Container for the remaining 3 posts
+    
+                // Loop through the returned posts and display them
+                jsonResponse.forEach(function(post, index) {
+
+                    if(post.youtube_id!='' && post.youtube_id!=null){
+                        var postHTML = '<div data-id="'+ post.id +'" class="news-box has_video f-shrink-0">';
+                        postHTML += '<div class="news-image f-shrink-0"><a class="gallery-fancybox" data-fancybox="gallery" href="https://www.youtube.com/embed/'+post.youtube_id+'?rel=0&modestbranding=1&controls=0&showinfo=0&autohide=1"><img class="object-fit-cover" src="' + post.img_url + '" alt="' + post.img_alt + '" title="' + post.img_title + '"/><span class="after_video"></span></a></div>';
+                        var content_open = '<a class="news_a" href="' + post.permalink + '" alt="'+post.title+'">'
+                        var clous = '</a></div>';
+                    }else{
+                        var postHTML = '<a data-id="'+ post.id +'" href="' + post.permalink + '" alt="'+post.title+'" class="news-box f-shrink-0">';
+                        postHTML += '<div class="news-image f-shrink-0"><img class="object-fit-cover" src="' + post.img_url + '" alt="' + post.img_alt + '" title="' + post.img_title + '"/></div>';
+                        var content_open = '<div>';
+                        var clous = '</div></a>';
+                    }
+                   
+                    // Add date below image
+                    postHTML += content_open;
+                    if(index<4 || w > 767){
+                        postHTML += '<div class="news-date fs-14">' + post.date + '</div>';
+                    }
+                    postHTML += '<h5>' + post.title + '</h5>';
+                    postHTML += '<div class="news-content fs-16">' + post.content + '</div>';
+                    if(index>3 && w < 768){
+                        postHTML += '<div class="news-date fs-14">' + post.date + '</div>';
+                    }
+                    postHTML += clous;
+    
+                    // Append to container based on the index
+                    if (index < 4) {
+                        container1.append(postHTML); // First 4 posts
+                    } else {
+                        container2.append(postHTML); // Remaining 3 posts
+                    }
+                });
+                $('.new_knowledge').closest('.opacity-0').addClass('in');
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX error:", error);
+            }
+
+            
+        });
+    }
+
+    $(".series.second_green_background,.series.primary_background").each(function () {  
+        let series = $(this);
+        let series_c = $(this).find('.series-c');
+        let groupId = series.data("group"); 
+
+        $.ajax({
+            url: `/wp-json/custom/v1/series/${groupId}/${pageId}`,
+            method: "GET",
+            success: function(jsonResponse){
+                jsonResponse.forEach(function(post, index) {
+                    if(post.youtube_id!='' && post.youtube_id!=null){
+                        var html = `<div class="series-image swiper-slide"><a class="gallery-fancybox" data-fancybox="gallery" href="https://www.youtube.com/embed/${post.youtube_id}?rel=0&modestbranding=1&showinfo=0&controls=0"><img class="object-fit-cover" src="${post.img_url}" alt="${post.img_alt}" title="${post.img_title}"/><span class="after_video"></span></a>
+                            <a class="series-content" href="${post.permalink}" target="${post.link_new_tab}  alt="${post.title}"><h5 class="h3-new bold">${post.title}</h5><span>${post.content}</span></a>
+                            </div>`;  
+                    }else{  
+                        var html = `<div class="series-image swiper-slide"><a target="${post.link_new_tab}" href="${post.permalink}" alt="${post.title}"><img class="object-fit-cover" src="${post.img_url}" alt="${post.img_alt}" title="${post.img_title}"/>
+                            <div class="series-content"><h5 class="h3-new bold">${post.title}</h5><span>${post.content}</span>
+                            </a></div></div>`;
+                    }
+
+                    series_c.append(html);
+                });
+                if(series.attr('id') == 'series_1'){  
+                    recommendationsSwiper('.series_1',4,3,2.3,'.series_1_swiper',false,20,false, 900,10);
+                }else{
+                    recommendationsSwiper('.series_2',4,3,2,'.series_2_swiper',false,20,false, 900,10);
+                }
+                series.addClass('in');
+            }, 
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", error);
+            }
+        });
+        
+    });
+
+    $(".promotions").each(function () {
+        let promotions = $(this); // This is the correct scope reference
+        let groupId = promotions.data("group");
+            $.ajax({
+                url: `/wp-json/custom/v1/promotions/${groupId}/${pageId}`,
+                method: "GET",
+                success: function(data){
+                    if(data.youtube!='' && data.youtube!=null){
+                        let imageTarget = data.image_link_new_tab === '_blank' ? ' target="_blank"' : '';
+                        var right = `<div class="right_p">
+                        <a class="right_img gallery-fancybox relative" data-fancybox="gallery" href="https://www.youtube.com/embed/${data.youtube}?rel=0&modestbranding=1&showinfo=0&controls=1">
+                        <img class="object-fit-cover right_img" src="${data.img_url}" alt="${data.img_alt}" title="${data.right_img_title}"/>
+                        <span class="after_video"></span>
+                        </a>
+                        <a class="series-content primary_background white_color absolute" href="${data.image_link}"${imageTarget} alt="${data.title}"><span class="h3-new">${data.right_img_title}</span></a>
+                        </div>`;  
+                    }else{
+                        let imageTarget = data.image_link_new_tab === '_blank' ? ' target="_blank"' : '';
+                        var right = `<div class="right_p">
+                        <a class=" " href="${data.image_link}"${imageTarget} alt="${data.title}">
+                        <img class="object-fit-cover right_img" src="${data.img_url}" alt="${data.img_alt}" title="${data.img_title}"/>
+                        <span class="series-content primary_background white_color">${data.right_img_title}</span>
+                        </a>
+                        </div>`;  
+                    }  
+                    if(data.youtube_article!='' && data.youtube_article!=null){
+                        let articleTarget = data.article_link_new_tab === '_blank' ? ' target="_blank"' : '';
+                        var article_img = `<div class="d-flex article_div youtube_article">
+                        <a class="article_img f-shrink-0 gallery-fancybox relative" data-fancybox="gallery" href="https://www.youtube.com/embed/${data.youtube_article}?rel=0&modestbranding=1&showinfo=0&controls=1">
+                        <img class="object-fit-cover" src="${data.article_img_url}" alt="${data.article_img_alt}" title="${data.article_img_title}"/>
+                        <span class="after_video"></span>
+                        
+                        </a><a class="article_cc" href="${data.article_link}">
+                        <span class="article_date d-d-none">${data.article_date}</span>
+                        <span class="article_title d-block fs-20 bold">${data.article_title}</span>
+                        <span class="article_content">"${data.article_content}"</span>
+                        <span class="article_date m-d-none">${data.article_date}</span>
+                        </a></div>`;
+                    }else{
+                        var article_img = `<div class="d-flex article_div img_article">
+                            <a class="f-shrink-0 d-d-flex article_img gallery-fancybox relative d-flex" href="${data.article_link}"">
+                                <img class="object-fit-cover  " src="${data.article_img_url}" alt="${data.article_img_alt}" title="${data.article_img_title}"/>
+                                <div class="article_cc" href="${data.article_link}">
+                                <span class="article_date d-d-none">${data.article_date}</span>
+                                <span class="article_title fs-20 bold d-block">${data.article_title}</span>
+                                <span class="article_content">"${data.article_content}"</span>
+                                <span class="article_date m-d-none">${data.article_date}</span>
+                                </div>
+                            </a> 
+                        </div>`;
+                    }
+                    var leftttt = `<div class="d-flex button_div">
+                        <a class="primary_background" alt="${data.button_txt_green}" href="${data.button_link}" target="${data.button_link_new_tab}">
+                            <span class="second-color one-lines  h3-new bold">${data.button_txt_green}</span>
+                            <span class="white_color two-lines">${data.button_txt_white}</span>
+                        </a>
+                        <a class="primary_background" alt="${data.button2_txt_green}" target="${data.button2_new_tab}" href="${data.button2_link}">
+                            <span class="second-color one-lines h3-new bold">${data.button2_txt_green}</span>
+                            <span class="white_color two-lines">${data.button2_txt_white}</span>
+                        </a></div>`;
+                    if(w > 767){
+                        var left = `<div class="left_p d-flex">`+leftttt+`
+                            `+article_img+`
+                        </div>`;
+                    }else{
+                        var left = `<div class="left_p d-flex">`+leftttt+`   
+                        </div>`+article_img;
+                    }
+                    promotions.append(`<h3 class="h1-new bold">${data.title}</h3>`);
+                    promotions.append(right);
+                    promotions.append(left);
+                    promotions.append(`<div class="button-left-div"><a href="${data.buttom_link}" target="${data.button2_new_tab}"  class="durk_button_link">${data.buttom_link_text}</a></div>`);
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error:", error);
+                }
+            });
+    });
+
+    
+    // Call the REST API
+    $.ajax({
+        url: `/wp-json/wp/v2/area_top_images/${objectId}`,
+        method: 'GET',
+        dataType: 'json',
+        success: function (jsonResponse) {
+            var data;
+            try {
+               data = jsonResponse;
+                // data = JSON.parse(jsonResponse);
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
+                return; // Exit if parsing failed
+            }
+            if(w >768) {
+                $('.area_img').css('background-image', `url(${data.desktop_img})`);
+                $('.area_img').attr('title', data.desktop_img_alt);
+                $('.area_img').attr('alt', data.desktop_img_title);
+            }else{
+                $('.area_img').css('background-image', `url(${data.mobile_img})`);
+                $('.area_img').attr('title', data.mobile_img_title);
+                $('.area_img').attr('alt', data.mobile_img_alt);
+            }
+            if ($('.map_img').length > 0)
+                $('.map_img').attr('src', data.map_img).attr('alt', data.map_img_alt);
+        },
+        error: function (xhr, status, error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+
+    // Call the REST API
+    $.ajax({
+        url: `/wp-json/wp/v2/banner`,
+        method: 'GET',
+        dataType: 'json',
+        data: {
+            id: objectId,
+            type: type
+        },
+        success: function (jsonResponse) {
+            var data;
+            try {
+                data = JSON.parse(jsonResponse);
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
+                return; // Exit if parsing failed
+            }
+            // Populate the image element with the fetched data
+            if(w < 768){
+                $('.banner_img')                
+                    .attr('src', data.banner_img_mobile)
+                    .attr('alt', data.banner_img_mobile_alt)
+                    .attr('title', data.banner_img_mobile_title);
+            }else{
+                $('.banner_img')                
+                .attr('src', data.banner_img)
+                .attr('alt', data.banner_img_alt)
+                .attr('title', data.banner_img_title);
+            }
+            $('.banner a').attr('href',data.link).attr('aria-label',data.banner_link_description)
+            // Remove the opacity class to make the section visible
+            $('.banner').removeClass('opacity-0');
+        },
+        error: function (xhr, status, error) {
+            console.error('Error fetching banner data:', error);
+        }
+    });
+
+    // Call the REST API
+    $.ajax({
+        url: `/wp-json/wp/v2/categories/${objectId}`,
+        method: 'GET',
+        dataType: 'json',
+        success: function (jsonResponse) {
+            var data;
+            try {
+                data = JSON.parse(jsonResponse);
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
+                return; // Exit if parsing failed
+            }
+    
+            console.log("Parent Category:", data.parent);
+            let i = 0; // Changed $i to i for clarity
+            if (data.children && data.children.length > 0) {
+                data.children.forEach(function (child) {
+                    $.ajax({
+                        url: `/wp-json/wp/v2/area_recommended/${child.id}`,
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function (childResponse) {
+                            if (childResponse) {
+
+                                let categoryDiv = `
+                                <div id="single_area_${i}" class="single_area card ${i === 0 ? 'open' : ''}">       
+                                    <div class="area_img relative background-image-d background-cover" alt="${childResponse.area_top_images.img_alt}" alt="${childResponse.area_top_images.img_title}" style="background-image: url('${childResponse.area_top_images.img}');">
+                                        <h3 class="area_title second_green_background primary_color fw-700 h1-new br-10 d-ib absolute">
+                                            ${childResponse.area_top_images.green_text}
+                                        </h3>
+                                    </div>
+                                    <div class="p_card">
+                                        <p class="description_txt fs-18 m-font-14">
+                                            ${childResponse.area_top_images.sub_text}
+                                        </p>
+                                    </div>
+                                </div>`;
+                                $('.sub_area_cards').append(categoryDiv);
+    
+                                // Initialize the content_toggle wrapper
+                                let contentToggleHtml = '<div class="content_toggle">';
+                                let index = 0;
+                                // Add info_counter section
+                                if (childResponse.counter_area) {
+                                    let counterAreaHtml = '<div class="d-flex info_counter space-between">';
+                                    
+                                    // Get the number of items in the counter_area
+                                    const counterItems = Object.entries(childResponse.counter_area).filter(([key, value]) => value != 0);
+                                    const counterItemsCount = counterItems.length;
+                                    
+                                    // Add a class if there is only one or two items
+                                    if (counterItemsCount === 1 || counterItemsCount === 2) {
+                                        counterAreaHtml += ' two-or-one'; // Add the class "two-or-one" (or any class you'd like)
+                                    }
+                                    
+                                    // Loop through counter_area items
+                                    counterItems.forEach(([key, value]) => {
+                                        counterAreaHtml += `
+                                        <div class="align-center d-flex single_counter primary_color">
+                                            <img alt="${value}_icon" src="/wp-content/themes/joomi/images/new_area_images/${key}.svg" />
+                                            <a href="${childResponse.link}" class="txt_counter">
+                                                <span class="big_txt">${value}</span>
+                                                <span>${translateJson[key]}</span>
+                                            </a>
+                                        </div>`;
+                                    });
+                                    
+                                    counterAreaHtml += '</div>'; // Close info_counter
+                                    contentToggleHtml += counterAreaHtml; // Add info_counter to content_toggle
+                                }
+    
+                                // Add aaa section
+                                let swiperWrapper = (w < 768) ? 'swiper-wrapper' : '';
+                                let recommendedImageAreaHtml = `
+                                    <div class="aaa">
+                                        <div class="primary_color">
+                                            <h3 class="img_txt_title fw-700">לא כדאי לפספס!</h3>
+                                            <div id="area-swiper-${i}" class="swiper-container">
+                                                <div class="${swiperWrapper}">`;
+                                                    if (childResponse.recommended_image) {
+                                                        childResponse.recommended_image.forEach(function (item) {
+                                                            recommendedImageAreaHtml += `
+                                                                <div class="swiper-slide swiper-area-recommendation">
+                                                                    <a href="${item.link}" class="img_txt align-center d-flex">
+                                                                        <div loading="lazy" class="img_and_icon_wrap relative" data-icon="${item.post_type}">
+                                                                            <img src="${item.image_url}" alt="${item.image_alt}" title="${item.image_title}" />
+                                                                        </div>                        
+                                                                        <div class="area-desc">
+                                                                            <h4 class="fw-700">${item.name}</h4>`;
+
+                                                            // Only show sub_title if it's not null or empty
+                                                            if (item.sub_title && item.sub_title.trim() !== '' && item.sub_title !== 'null') {
+                                                                recommendedImageAreaHtml += `<span class="">${item.sub_title}</span>`;
+                                                            }
+
+                                                            recommendedImageAreaHtml += `
+                                                                        </div>
+                                                                    </a>
+                                                                </div>`;
+                                                        });
+                                                    }
+
+                                        recommendedImageAreaHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                            <div class="d-flex f-row-reverse">
+                                <a href="${childResponse.link}" class="durk_button_link m-font-22">
+                                    ${translateJson["more in"]}${childResponse.name}
+                                </a>
+                            </div>
+                        </div>
+                    </div>`;
+                    contentToggleHtml += recommendedImageAreaHtml; // Add aaa to content_toggle
+
+                                contentToggleHtml += '</div>'; // Close content_toggle
+                                $(`#single_area_${i} .p_card`).append(contentToggleHtml);
+    
+                                if (w < 768) {
+                                    recommendationsSwiper(`#area-swiper-${i}`, 3, 3, 1.94, '.single_area', false, 20);
+                                }
+                                i++;
+                            } else {
+                                console.log(`No recommended images found for child category ${child.id}`);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(`Error fetching data for child category ${child.id}:`, error);
+                        }
+                    });
+                });
+            } else {
+                console.log("No children categories found.");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error fetching category data:', error);
+        }
+    });
+
+    if($('#area_chid_sibilngs').length > 0){
+        if ($('#area_chid_sibilngs').length > 0) {
+            $.ajax({
+                url: `/wp-json/wp/v2/sibling_categories/${objectId}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function (jsonResponse) {
+                    var container = $('.sub_area_cards');
+                    var count = 0;
+                    jsonResponse.forEach(function (item) {
+                        var itemHtml = `
+                            <div class="swiper-slide br-10 sibiling-item"><div class="ddd">
+                                <a href="${item.category_link}">
+                                    <div class="d-flex image-wrapper background-cover background-image-d" alt="${item.img_alt}" style="background-image: url('${item.img}');"">
+                                        <div>
+                                        <div class="category-name second_green_background primary_color fw-700  second_green_background primary_color fs-26">${item.category_name}</div>
+                                        </div>
+                                    </div>
+                                    <div class="sub-text fs-20">${item.sub_text}</div>
+                                </a>
+                            </div></div>
+                        `;
+                        container.append(itemHtml);
+                        count+=1;
+                    });
+                    if(count == 0){
+                        $('#area_chid_sibilngs').remove();
+                    }
+                    if(count >2){
+                        recommendationsSwiper(`.sibiling_container`, 3.2,3.2, 1.8, '.sibiling_container', false, 35,false,0,20);
+                    } 
+                    if(count == 2){
+                        recommendationsSwiper(`.sibiling_container`, 2,2, 1.8, '.sibiling_container', false, 35,false,0,20);
+                    }
+                },
+                error: function (error) {
+                    console.error("Failed to fetch data:", error);
+                }
+            });
+        }
+    }
+});
+
+function events_calender(translateJson){
+    if($('.events_calender').length > 0){
+        $.ajax({
+            type: "GET",
+            url: "/wp-json/wp/v2/get_availability_board",        
+            success: function(jsonResponse){
+            $('.image_loader').css('display','none');
+            var obj = jQuery.parseJSON(jsonResponse);
+            var available_spaces = $('.wrapper_available_rp').attr('data-available_spaces');
+            $.each(obj, function (key, value) {
+                var class1 = value.hasOwnProperty('timeslots') ? 'block' : 'none';
+                var class2 = value.hasOwnProperty('timeslots2') ? 'block' : 'none';
+
+                var timeslotsText = value.timeslots ? value.timeslots : '';
+                var timeslots2Text = value.timeslots2 ? value.timeslots2 : '';
+
+                var $box = '<div class="item_rp col-lg-17 col-md-11 col-sm-17" data-item_id=' + key + ' data-cat_id="' + value.category_id + '" style="display:' + value.initial_view + '; background:linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,.2)), #dfdfdf url(' + value.image + ') 50% 0/cover no-repeat;">';
+                $box += '<a href="' + value.link + '"><h3>' + value.title + '</h3>';
+                $box += '<div class="content_rp">';
+                $box += '<p class="timeslots" style="display:' + class1 + '">';
+                $box += '<span class="s1">' + timeslotsText + '</span>';
+                $box += '<span class="s2">' + value.stock + '</span> ' + available_spaces + '</p>';
+                $box += '<p class="timeslots2" style="display:' + class2 + '">';
+                $box += '<span class="s1">' + timeslots2Text + '</span>';
+                $box += '<span class="s2">' + value.stock2 + '</span>';
+                $box += '<span class="s3"> ' + available_spaces + '</span></p>';
+                $box += '<p class="text desctop" style="display:' + class2 + ';">'+translateJson['There are overtime inquiries']+'</p>';
+                $box += '<p class="text desctop" style="display:' + class1 + '">'+translateJson['For ditails']+'</p>';
+                $box += '<p class="text mobile" style="display:' + class1 + ';">'+translateJson['More overtime']+'</p>';
+                $box += '</div></a></div>';
+
+                $(".box_available").append($box);
+            });
+
+            $('.span_day.calSelectable.has_events:first').click();
+            }
+        });
+    }
+
+    if($('.activities_board').length > 0){
+        var activityFirstDate;
+        url = buket_url + 'activityFirstDate.json';
+        console.log(url);
+        fetch(url, {
+            credentials: 'include',
+        }).then(response => {
+            response.json().then(data => {
+                activityFirstDate = data;
+                $.ajax({
+                    type: "GET",
+                    url: "/wp-json/wp/v2/get_activity_board_api",        
+                    success: function(jsonResponse){
+                    var obj = jQuery.parseJSON(jsonResponse);
+                    //var available_spaces = $('.wrapper_available_rp').attr('data-available_spaces');
+                    $('.image_loader').css('display','none');
+                    //translateJson = jQuery.parseJSON( translateJson );
+                    var style;
+                    $.each(obj, function(key,value) {
+                        if(key in activityFirstDate){
+                            style = '';
+                        }else{
+                            style = 'style="display:none"';
+                        }
+                       
+                        var alt = (value.img_with_p && value.img_with_p.alt) ? value.img_with_p.alt:value.title;
+                        sting ='<a id="'+key+'" '+style+' class="activity_cube" target="_blank" data-item_id="'+value.chackfront_id+'" data-tags="'+value.tag_st+'" href = "'+value.link+'">';
+                                sting+='<div class="ac_content">';
+                                sting+='<img loading="lazy" src="'+value.image+'" alt="'+alt+'"  />  ';
+                                sting+='<div class="">';
+                                    sting+='<h3 class="ac_title">'+value.title+'</h3>'; 
+                                    sting+='<span class="place">'+value.place+'</span>';
+                                    sting+='</div>'; 
+                                sting+='</div>'; 
+                                sting+='<p class="timeslots ac_time_and_seats" style="display: none;">';
+                                sting+='<span class="s1 ac_time"></span>';
+                                //$sting+='<span class="s2 ac_seats_available"></span> available spaces';                            </p>
+                                sting+='<p class="timeslots2 ac_time_and_seats" style="display: none;">';
+                                sting+='<span class="s1 ac_time"></span>';
+                                sting+='<span class="s2 ac_seats_available"></span>'+translateJson['available spaces']+'</p> '; 
+                                sting+='<p class="more_timeslots text desctop" style="display:none">'+translateJson['There are overtime inquiries']+'</p>';
+                                sting+='<p class="more_timeslots text mobile"  style="display:none">'+translateJson['More overtime']+'</p>';                             
+                                sting+='<span class="ac_desc">'+value.description+'</span>';
+                                sting+='<span class="ac_price">'+value.price+'</span>';
+                                sting+='<span class="learn_more learn_more_act">'+translateJson['Learn more']+'</span>';
+                            sting+='</a>';
+                        $( ".activity_details_wrap" ).append(sting);
+                    });
+                    if($('a.activity_cube:not("[style]")').length == 0){
+                        $('.not_found').css('display','block');
+                    }
+                }
+                });
+            });
+        });
+    }
+
+    if($('.recommended_up_map').length > 0){
+    $.ajax({
+        url: `/wp-json/wp/v2/recommended_elements/${objectId}`,
+        method: 'GET',
+        dataType: 'json',
+        success: function (jsonResponse) {
+            var data;
+            try {
+                //data = JSON.parse(jsonResponse);
+                data = jsonResponse;
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
+                return; // Exit if parsing failed
+            }
+            recommendedHtml = '';
+            data.forEach(function (item) {
+                recommendedHtml += `
+                <div class="swiper-slide swiper-area-recommendation">
+                    <a href="${item.link}" class="img_txt align-center">
+                        <div loading="lazy" class="img_and_icon_wrap relative" data-icon="${item.post_type}">
+                            <img class="object-fit-cover" src="${item.image_url}" alt="${item.image_alt}" title="${item.image_title}" />
+                        </div>                        
+                        <div class="area-desc">
+                            <h4 class="fw-700">${item.name}</h4>
+                            <span class="">${item.sub_title}</span>
+                        </div>
+                    </a>
+                </div>`;
+            });
+            $('.recommended_up_map').append(recommendedHtml);
+            if(w < 768){
+                recommendationsSwiper('.recommended_container',2.3,2.3,2.3,'.recommended_container',false,15);
+            }
+            $('.recommended_up_map').parent('.opacity-0').addClass('in');
+            
+        }
+    });
+          
+    }
+}
+
+function truncateContent(content, count) {
+    if (count > 0 && content.length > count) {
+        // Cuts the content to the desired length
+        content = content.slice(0, count);
+        // Ensures that the content is not cut in the middle of a word
+        var truncated = content.lastIndexOf(' ');
+        if (truncated > 0) {
+            content = content.slice(0, truncated);
+        }
+    } 
+    else if (count <= 0) {
+        content = ''; 
+    }
+    return content;
+}
+
+function updateNewsContent(i, value, w) {
+    var length = value.title.length;
+    var count = (i <= 1) ? (450 - length * 2) : (205 - length * 2);   
+    if ($('#home_news' + i + ' .content').length > 0) {
+        var content = value.content;
+        if (w > 768) {
+            content = truncateContent(content, count);
+        } 
+        else if (w < 768) {
+            content = truncateContent(content, 61)+'...>>';
+        }
+        $('#home_news' + i + ' .content').html(content);
+    }
+}
+
+function recommendationsSwiper(
+    container, 
+    slidesPerView, 
+    slidesPerViewLeptop = slidesPerView, 
+    slidesPerViewMobile = slidesPerView, 
+    parentContainer = container, 
+    loop = false, 
+    spaceBetween = 15, 
+    autoplay = false,
+    speed = 300,
+    spaceBetweenmobile = spaceBetween
+) {
+    var next = parentContainer + ' .swiper-button-next';
+    var prev = parentContainer + ' .swiper-button-prev';
+    var pagination = parentContainer + ' .swiper-pagination';
+
+    // Define Swiper options
+    const swiperOptions = {
+        loop: loop,
+        autoHeight: true,            
+        direction: 'horizontal',
+        slidesPerView: slidesPerViewMobile,
+        spaceBetween: spaceBetweenmobile,
+        navigation: {
+            nextEl: next,
+            prevEl: prev,
+        },
+        pagination: {
+            el: pagination,
+            clickable: true,
+        },
+        breakpoints: {
+            768: {
+                slidesPerView: slidesPerViewLeptop,
+                spaceBetween : spaceBetween,
+                navigation: {
+                    nextEl: next,
+                    prevEl: prev,
+                },
+                pagination: {
+                    el: pagination,
+                    clickable: true,
+                },
+            },
+            1199: {
+                spaceBetween : spaceBetween,
+                slidesPerView: slidesPerView,
+            },
+        },
+        speed: speed,
+    };
+
+    // Add autoplay option if enabled
+    if (autoplay) {
+        swiperOptions.autoplay = {
+            delay: 3000, // Delay between slides in milliseconds
+            disableOnInteraction: false, // Continue autoplay after user interaction
+        };
+    }
+    
+    // Create unique Swiper instance per container
+    new Swiper(container + '.swiper-container', swiperOptions);
+}

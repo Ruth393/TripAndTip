@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav'; 
+import { MatMenuModule } from '@angular/material/menu';
 
 // --- (רכיבי טפסים נפוצים, מומלץ לטפסים) ---
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +26,7 @@ const MATERIAL_COMPONENTS = [
   // ניווט ולייאוט
   MatToolbarModule,
   MatSidenavModule,
+  MatMenuModule,
   
   // טפסים
   MatFormFieldModule,

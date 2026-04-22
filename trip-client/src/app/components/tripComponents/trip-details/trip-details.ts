@@ -1,86 +1,89 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { TripService } from '../../../service/trip.service';
-import  Trip,{ TripToUpload } from '../../../models/trip.model';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CategoryService } from '../../../service/category.service';
+// src/app/components/trip-details/trip-details.component.ts
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TripService } from '../../../service/trip.service';
+import Trip from '../../../models/trip.model';
+import { ListComments } from '../../commentComponents/list-comments/list-comments';
+import { AddComment } from '../../commentComponents/add-comment/add-comment';
+import { CommentDTO } from '../../../models/comment.model';
+import { PackingListComponent } from '../packing-list-component/packing-list-component';
 
 @Component({
-  selector: 'app-trip-details',
-  standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule],
-  templateUrl: './trip-details.html',
-  styleUrl: './trip-details.css',
+  selector: 'app-trip-details',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ListComments, 
+    AddComment,
+    PackingListComponent
+],
+  templateUrl: './trip-details.html',
+  styleUrls: ['./trip-details.css']
 })
-export class TripDetails implements OnInit, OnDestroy {
-  public tripToShow!: Trip;
-  public isUpdateTask: boolean = false;
-  public isLoading: boolean = true;
-  public errorMessage: string | null = null;
-  
-  private destroy$ = new Subject<void>();
+export class TripDetails implements OnInit {
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private tripService: TripService,
-    private sanitizer: DomSanitizer
-  ) {}
+  @ViewChild('listCommentsRef') listCommentsRef!: ListComments;
 
-  ngOnInit(): void {
-    this.route.params
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((params) => {
-        const id: number = params['id'];
-        this.loadTrip(id);
-      });
-  }
+  TripToShow?: Trip;
+  showAddForm = false;
+  commentsCount = 0; 
 
-  private loadTrip(id: number): void {
-    this.isLoading = true;
-    this.errorMessage = null;
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private tripService: TripService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-    this.tripService
-      .getTripById(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.tripToShow = res;
-          this.isLoading = false;
-          console.log('Trip loaded:', this.tripToShow);
-        },
-        error: (err) => {
-          this.errorMessage = 'Failed to load trip details';
-          this.isLoading = false;
-          console.error('Error loading trip:', err);
-        }
-      });
-  }
+  ngOnInit(): void {
+    const id = +this.route.snapshot.paramMap.get('id')!; 
+    this.tripService.getTripById(id).subscribe({
+      next: (trip) => {
+        this.TripToShow = trip;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
-  public getSafeImageUrl(base64Data: string): SafeUrl {
-    if (!base64Data) {
-      return this.sanitizer.bypassSecurityTrustUrl('assets/placeholder.png');
-    }
-    const dataUri = base64Data.startsWith('data:') 
-      ? base64Data 
-      : `data:image/jpeg;base64,${base64Data}`;
-    return this.sanitizer.bypassSecurityTrustUrl(dataUri);
-  }
+  onCommentsCountChange(count: number) {
+    this.commentsCount = count;
+  }
 
-  public close(): void {
-    this.router.navigate(['/list-trips']);
-  }
+  onCommentAdded(comment: CommentDTO) {
+    this.showAddForm = false;
+    // לוודא ש-TripToShow.id קיים
+    if (this.TripToShow?.id) { 
+        this.listCommentsRef.addComment(comment);
+    }
+  }
 
-  public goPreviousPage(): void {
-    this.router.navigate(['/welcome']);
-  }
+  goPreviousPage() {
+    this.router.navigate(['/list-trips']);
+  }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  // פונקציות עזר לתמונות נשארות זהות
+  getTripImage(): string {
+    if (!this.TripToShow) return 'https://via.placeholder.com/800x400';
+    if (this.TripToShow.image?.startsWith('/9j/') || this.TripToShow.image?.startsWith('iVBORw')) {
+      return 'data:image/jpeg;base64,' + this.TripToShow.image;
+    }
+    if (this.TripToShow.imagePath) {
+      return `http://localhost:8080/images/${this.TripToShow.imagePath}`;
+    }
+    return 'https://via.placeholder.com/800x400?text=No+Image';
+  }
+
+  getUserImage(): string {
+    const user = this.TripToShow?.user;
+    if (!user) return 'assets/A1.png';
+    const img = user.image || user.imagePath;
+    if (!img) return 'assets/A1.png';
+    if (img.startsWith('iVBORw') || img.startsWith('/9j/')) {
+      return 'data:image/png;base64,' + img;
+    }
+    return `http://localhost:8080/images/${img}`;
+  }
 }

@@ -4,6 +4,7 @@ package com.example.trip.dto;
 import com.example.trip.model.Comment;
 import com.example.trip.model.Role;
 import com.example.trip.model.Trip;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.Set;
 public class SignInDTO {
 
     private Long id;
-    private String userName;
+
+    @NotBlank(message = "נדרש מייל המשתמש")
+    private String email;
     private String image;
     private String imagePath;
 
@@ -28,12 +31,12 @@ public class SignInDTO {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getImage() {

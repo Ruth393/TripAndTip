@@ -1,0 +1,590 @@
+var buket_url;
+var activity;
+var jsonFile;
+var begininventory_;
+var choice_date;
+
+//Ajax function send date and get from php-checkfront all reverese-park's id from cjeckfront per date
+function setAJAX(acrion, dateSTR, file) {
+	let d;
+	if (dateSTR == null) {
+		d = new Date();
+		if ((d.getMonth() + 1) < 10)
+			var mstr = '0' + String(d.getMonth() + 1);
+		else {
+			var mstr = String(d.getMonth() + 1)
+		}
+		if ((d.getDate()) < 10) {
+			var dstr = '0' + String(d.getDate());
+		} else {
+			var dstr = String(d.getDate());
+		}
+		var dateSTR = String(d.getFullYear()) + mstr + dstr;
+
+	}
+
+	url = buket_url + file;
+	console.log(url);	
+	fetch(url, {
+		credentials: 'include',
+	}).then(response => {
+
+			date2 = response.headers.get('Last-Modified');  
+			date2 = new Date(response.headers.get('Last-Modified'));
+			date1 = new Date();
+			const diffTime = Math.abs(date1 - date2);
+			const diffHours = Math.ceil(diffTime / (1000 * 60 * 60 )); 
+			$( ".board_text" ).remove();
+			if(diffHours > 24){
+				if($('html').attr('lang') == "he-IL"){
+					$txt = "שימו לב, הלוח אינו מעודכן למעלה מ-24 שעות";
+				}else{
+					$txt = "Please note that the board is not updated for more than 24 hours"
+				}
+				$( ".available_rp" ).append( '<span class="board_text">'+$txt+'</span>' );
+			}else{
+
+			}
+		response.json().then(data => {
+			jsonData = data;
+			//jsonData = response; 
+			if (jsonData.length != 0) {
+				var intervalId = setInterval(function (response) {
+					// We've reached the end of the array, stop calling this function
+					if (finishDrow == true) {
+						setssAJAX(jsonData, dateSTR);
+						clearInterval(intervalId);
+					}
+				}, 100);
+			}  
+			else $('.item_rp').css('display', 'none');
+		});
+	});
+}
+
+function setssAJAX(jsonData, dateSTR) {
+	$(".calSelectable").each(function () {
+		var dateattr = $(this).attr('datadate');
+		var dateattr = 'a' + dateattr + 'a';
+		$(this).attr('data-items', jsonData[dateattr]);
+		data_num = '0';
+		if (jsonData[dateattr]) {
+			data_num = jsonData[dateattr].replace(',', '').length;
+			if (jsonData[dateattr].match(/,/igm))
+				data_num = jsonData[dateattr].match(/,/igm).length + 1;
+			else if (jsonData[dateattr].length > 0) {
+				data_num = 1;
+			}
+			$(this).attr({ 'data_num': data_num });
+			//If this is the date of the day, activate the quadrilateral and mark the free hours
+			if ($(this).hasClass('calSelected')) {
+				choice_date = jsonData[dateattr];
+				display_items(jsonData[dateattr]);
+				display_teimes(jsonData[dateattr], dateSTR);
+			}
+		}
+		$(this).attr({ 'data_num': data_num });
+		if (data_num != '0') {
+			$(this).addClass('has_events');		
+			$(this).attr("tabindex","0");	  
+		}
+	});
+}
+//Plagin code
+function D3ToStr(y, m, d) {
+	m++;
+	if (m < 10) m = '0' + m;
+	if (d < 10) d = '0' + d;
+	return y + '-' + m + '-' + d;
+}
+function D3ToDate(y, m, d) {
+	return new Date(y, m, d, 0, 0, 0, 0);
+}
+function DateToD3(date) {
+	let y = date.getFullYear();
+	let m = date.getMonth();
+	let d = date.getDate();
+	return { y: y, m: m, d: d };
+}
+function DateToStr(date) {
+	let d3 = DateToD3(date);
+	return D3ToStr(d3.y, d3.m, d3.d);
+}
+function DaysInMonth(year, month) {
+	return new Date(year, month, 0).getDate();
+}
+function StrToDate(s) {
+	let y = parseInt(s.substring(0, 4), 10);
+	let m = parseInt(s.substring(5, 7), 10);
+	let d = parseInt(s.substring(8, 10), 10);
+	return D3ToDate(y, m - 1, d);
+}
+var jsonData;
+var finishDrow;
+(function ($) {
+
+	finishDrow = false;
+	jsonFile = 'dateTotrip.json';
+	begininventory_ = 'inventory_fo/inventory_';
+	activity = false;
+	buket_url = $('body').attr('data-buket');
+	$.fn.jsRapCalendar = function (options) {
+		if ($(this).hasClass('activities_board')) {
+			jsonFile = 'ActivityToTrip.json';
+			begininventory_ = 'inventory_fo/inventory_activity_';
+			activity = true;
+		}
+		setAJAX('ajax_script_dateTotrip', null, jsonFile);
+
+		if ($('html').attr('lang') == "he-IL") {
+			var monthsNamesVar = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+			var daysName = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+			var filtersVar = ['צפון', 'מרכז', 'יו"ש', 'דרום', 'הכל'];
+			var readerVar = 'מספר גנים ושמורות שניתן לתאם בהם ביקור';
+		}
+		else if ($('html').attr('lang') == "ar") {
+			var monthsNamesVar = ['كانون ثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حُزيران', 'تموز', 'آب', 'أيلول', 'تشرين أول', 'تشرين ثاني', 'كانون أول'];
+			var daysName = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+			var filtersVar = ['شمال', 'مركز', 'يهودا والسامرة', 'جنوب', 'جميع المناطق'];
+			var readerVar = 'عدد الحدائق والمحميات التي يمكن ترتيب زيارة لها';
+		} else {
+			var monthsNamesVar = ['January', 'February', 'March', 'April', 'May', 'Jun', 'July', 'August', 'September', 'October', 'November', 'December'];
+			var daysName = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+			var filtersVar = ['North', 'Center', 'Judea and Samaria', 'South', 'All'];
+			var readerVar = 'Number of parks and reserves accepting reservations';
+		}
+
+		return this.each(function () {
+			let d = new Date();
+			let maxDateOrder = new Date();
+			maxDateOrder.setDate(maxDateOrder.getDate() + 14);
+			this.opt = $.extend({
+				enabled: true,
+				showCaption: true,
+				showYear: true,
+				showArrows: true,
+				week: 0,
+				minDate: DateToStr(d),
+				maxDateOrder: DateToStr(maxDateOrder),
+				date: d,
+				daysName: daysName,
+				monthsNames: monthsNamesVar,
+				filters: filtersVar,
+				reader: readerVar,
+				onClick: null
+			}, options);
+			let base = this;
+			d3 = DateToD3(this.opt.date);
+			this.curYear = d3.y;
+			this.curMonth = d3.m;
+			this.curDay = d3.d;
+			let curWeek = this.opt.date.getDay();
+			this.selY = this.curYear;
+			this.selM = this.curMonth;
+			this.selD = this.curDay;
+			$(this).addClass('rapCalendar');
+			let table = $('<div class="table"></div>').appendTo($(this));
+			if (this.opt.showCaption) {
+				this.caption = $('<caption>').appendTo(table);
+				this.cap = $('<span>').appendTo(this.caption);
+				if (this.opt.showArrows) {
+					this.larr = $('<div></div>').addClass('larr arrow').appendTo(this.caption);
+					this.rarr = $('<div></div>').addClass('rarr arrow').appendTo(this.caption);
+					$(this.larr).attr('tabindex', 0);
+					$(this.rarr).attr('tabindex', 0);
+					$([this.larr[0], this.rarr[0]]).attr('role', 'button');
+				}
+			} else
+				this.caption = false;
+			//Filters, Category id from checkfront
+			if (!activity) {
+				let sort = $('<div class="filters"></div>').appendTo(table); 
+				$('<span class="filter_line" data-cat="north" tabindex="0"></span>').text(this.opt.filters[0]).appendTo(sort);
+				$('<span class="filter_line" data-cat="coordinator" tabindex="0"></span>').text(this.opt.filters[1]).appendTo(sort);
+				$('<span class="filter_line" data-cat="Judea_and_Samaria" tabindex="0"></span>').text(this.opt.filters[2]).appendTo(sort);
+				if ($('html').attr('lang') == "en-US") $('<br>').appendTo(sort);
+				$('<span class="filter_line" data-cat="South" tabindex="0"></span>').text(this.opt.filters[3]).appendTo(sort);
+				$('<span class="filter_line active" data-cat="all" tabindex="0"></span>').text(this.opt.filters[4]).appendTo(sort);
+				$('<div class="reader"></div>').text(this.opt.reader).appendTo(table);							
+			}
+			else{
+				$('<div class="reader descText"></div>').text('בחר תאריך כדי לראות את רשימת הפעילויות').appendTo(table);  
+				$('<div class="reader possible_act"></div>').text('מספר פעילויות שניתן לתאם בהן ביקור').appendTo(table);  
+			}
+
+			let head = $('<div class="thead"></div>').appendTo(table);
+			let dayNames = $('<div class="tr top_row"></div>').appendTo(head);
+			for (let n = 0; n < 7; n++)
+				$('<div class="th"></div>').text(this.opt.daysName[n]).appendTo(dayNames);
+			let tbody = $('<div class="tbody"></div>').appendTo(table);
+		
+			$(this.larr).bind({
+				keypress: function(e) {					
+					if(e.which == 13){
+						$(this).click();
+					}
+				},
+				click: function (e) {
+					base.ShowMonth(base.curYear, base.curMonth, -1);
+					if($('.span_day').hasClass('has_events'))
+						$('.span_day').attr('tabindex', 0);
+				}
+			});
+
+			$(this.rarr).bind({
+				keypress: function(e) {					
+					if(e.which == 13){
+						$(this).click();
+					}
+				},
+				click: function (e) {
+					base.ShowMonth(base.curYear, base.curMonth, 1);	
+					$( ".span_day.has_events" ).each(function() {										
+						$(this).attr('tabindex', 0);
+					});					
+				}
+			});
+
+			this.ShowMonth = function (year, month, del) {
+				this.curYear = year;
+				this.curMonth = month + del;
+				if (this.curMonth < 0) {
+					this.curMonth = 11;
+					this.curYear--;
+				}
+				if (this.curMonth > 11) {
+					this.curMonth = 0;
+					this.curYear++;
+				}
+				if (this.caption) {
+					let s = this.opt.monthsNames[this.curMonth];
+					if (this.opt.showYear)
+						s += ' ' + this.curYear;
+					$(this.cap).text(s);
+				}
+				$(tbody).empty();
+				let dim = DaysInMonth(this.curYear, this.curMonth + 1);
+				let tr = $('<div class="tt row_days" role="row"></div>').appendTo(tbody);
+				let td = null;
+				let fd = (new Date(this.curYear, this.curMonth, 1).getDay());
+				for (var n = 0; n < fd; n++)
+					td = $('<div class="none-day span_day rt"> - </div>').appendTo(tr);
+				for (var n = 1; n <= dim; n++) {
+					var dataitems;
+					var cardateSTR;
+					if ($(tr).children().length > 6)
+						tr = $('<div class="mm row_days" role="row">').appendTo(tbody);
+					let d = $('<div class="span_day">').text(n).appendTo(tr);					
+					if ((this.curMonth + 1) < 10)
+						var mstr = '0' + String(this.curMonth + 1);
+					else {
+						var mstr = String(this.curMonth + 1)
+					}
+					if ((n) < 10)
+						var dstr = '0' + String(n);
+					else {
+						var dstr = String(n);
+					}
+					var dateSTR = String(this.curYear) + mstr + dstr
+					d.attr({ 'datadate': dateSTR });
+					if ((this.selY == this.curYear) && (this.selM == this.curMonth) && (this.selD == n)) {
+						cardateSTR = dateSTR;
+					}
+
+					if (D3ToStr(this.curYear, this.curMonth, n) < this.opt.minDate) {
+						d.addClass('calDisable');
+					}
+					else if (this.opt.enabled) {
+						d.addClass('calSelectable');
+						var data_num;
+						if (jsonData) {
+							d.attr({ 'data-items': jsonData['a' + dateSTR + 'a'] });
+							dataitems = jsonData['a' + dateSTR + 'a'];
+							if (jsonData['a' + dateSTR + 'a'] && jsonData['a' + dateSTR + 'a'].match(/,/igm)) {
+								data_num = jsonData['a' + dateSTR + 'a'].match(/,/igm).length + 1;
+								d.attr({ 'data_num': data_num });
+								if ((this.selY == this.curYear) && (this.selM == this.curMonth) && (this.selD == n)) {
+									$(d).addClass('actiive');
+									//display_items(jsonData['a'+dateSTR+'a']);
+								}
+								if (data_num > 0) {
+									d.addClass('has_events');
+								}
+							}
+						}
+					}
+					finishDrow = true;
+					if ((this.selY == this.curYear) && (this.selM == this.curMonth) && (this.selD == n)) {
+						$(d).addClass('calSelected');
+						$(d).addClass('active');
+					}
+					//To last row
+					if (n > dim - 7) {
+						$(d).addClass('pp');
+					}
+				}
+				let fd1 = (new Date(this.curYear, this.curMonth, dim).getDay());
+				fd1 = 6 - fd1;
+				for (x = 0; x < fd1; x++)
+					td = $('<div class="none-day span_day pp rt"> - </div>').appendTo(tr);
+
+				$('.calSelectable', this).bind({
+					keypress: function(e) {					
+						if(e.which == 13){
+							$(this).click();
+						}
+					},
+					click: function (e) {
+						$('span', base).removeClass('calSelected');
+						$(this).addClass('calSelected');
+						$('.calSelected.active').removeClass('active');
+						$(this).addClass('active');
+						base.selY = base.curYear;
+						base.selM = base.curMonth;
+						base.selD = $(this).text();
+						var dstr = base.selD;
+						if ((parseInt(base.selD)) < 10)
+							dstr = '0' + base.selD;
+						var mstr = base.curMonth + 1;
+						if (mstr < 10)
+							mstr = '0' + mstr;
+						var dateSTR = String(base.curYear) + String(mstr) + dstr;
+						if ($(this).attr('data-items')) {
+							if (activity) {
+								$(this).addClass('active');
+								display_items_activity();
+								var dateForText = dstr + "/"+ String(mstr) + "/" + String(base.curYear);							
+								if($('html').attr('lang') == "he-IL")
+									$txt = "ב";
+								else
+									$txt= "on";
+								$('.wrapper_available_rp .specific_date').html(" "+$txt+" "+dateForText);
+								$('.date_activity').focus();
+							}
+							display_teimes($(this).attr('data-items'), dateSTR);
+							
+						}
+						if (base.opt.onClick)
+							base.opt.onClick.call(this, base.selY, base.selM, base.selD);
+					}
+				});
+			}
+			this.ShowMonth(this.curYear, this.curMonth, 0);
+		})
+	}
+})(jQuery);
+
+//A function that receives the first 2 free hours and the number of available days for that day
+function display_teimes($item, dateSTR) {
+	$lang = $('html')[0].lang;
+	if ($lang != 'he-IL') {
+		$lang = 'he';
+	}
+	url = buket_url + begininventory_ + dateSTR + '.json'
+	console.log(url);	
+	fetch(url, {
+		credentials: 'include',
+	}).then(response => {
+		date2 = response.headers.get('Last-Modified');
+		date2 = new Date(response.headers.get('Last-Modified'));
+		date1 = new Date();
+		const diffTime = Math.abs(date1 - date2);
+		const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+		if (diffHours > 24) {
+			if ($('html').attr('lang') == "he-IL") {
+				$txt = "שימו לב, הלוח אינו מעודכן למעלה מ-24 שעות";
+			} else {
+				$txt = "Please note that the board is not updated for more than 24 hours"
+			}
+		}
+		response.json().then(data => {
+			rData = data;
+			$('.item_rp,.activity_cube').each(function (index) {
+				item_id = $(this).attr('data-item_id').toString();
+				if (rData[item_id]) {
+
+					$(this).find("p.timeslots").hide();
+					$(this).find("p.timeslots2").hide();
+					$(this).find("p.text").hide();
+					if (rData[item_id]['timeslots']) {
+						$(this).find("p.timeslots span.s1").text(rData[item_id]['timeslots']);
+						$(this).find("p.timeslots span.s2").text(rData[item_id]['stock']);
+						$(this).find("p.timeslots").show();
+
+					}
+					if (rData[item_id]['timeslots2']) {
+						$(this).find("p.timeslots2 span.s1").text(rData[item_id]['timeslots2']);
+						$(this).find("p.timeslots2 span.s2").text(rData[item_id]['stock2']);
+						$(this).find("p.timeslots2").show();
+						$(this).find("p.more_timeslots").show();
+						$(this).find("p.more_timeslots").show();
+						$(this).find(".text").show();
+					}
+				}
+			});
+		});
+	});	
+}
+//A function that filters the squares of the reserved side by the reserved gardens
+function display_items(items_id) {
+	var cat_filter, cat_id, item_id, cnt = 0;
+	var a = [];
+	if (String(items_id).match(/,/igm))
+		items_id = items_id.split(",");
+	else {
+		a.push(items_id.toString());
+		items_id = a;
+	}
+	$('.item_rp').attr('tabindex', -1); 
+	$('.item_rp').css('display', 'inline-block');
+	$('.item_rp').each(function (index) {
+		item_id = $(this).attr('data-item_id').toString();
+		cat_id = $(this).data('cat_id');
+		cat_filter = $('.wrapper_available_rp .filter_line.active').data('cat');
+
+		if ($.inArray(item_id, items_id) == -1 || cat_id != cat_filter && cat_filter != 'all') {
+			$(this).css('display', 'none');
+			cnt++;			
+		}
+		else if ($('.sbarSearch').val() && $('.sbarSearch').val().length > 2) {
+			if (($(this).find('h3').text().indexOf($('.sbarSearch').val()) < 0 ) && ($(this).find('.place').text().indexOf($('.sbarSearch').val()) < 0))  {
+				$(this).css('display', 'none');
+				cnt++;				
+			}
+		}
+		
+	});
+	//if (!activity)
+		//$('.calSelectable.active').attr('data_num', $('.item_rp').length - cnt);
+}  
+
+
+jQuery(document).ready(function ($) {
+	if ($(window).width() < 1024 && $('.filterLine.under_colum').length > 0) {
+
+		$('.filterLine.under_colum').insertAfter($(".col-md-4.col-sm-6.filterLine").last());
+		$('.filterLine.under_colum').addClass('col-md-4 col-sm-6');
+	}
+	
+	$('.wrapper_available_rp .filter_line').click(function () {			
+		$('.wrapper_available_rp .filter_line').removeClass('active');
+		$(this).addClass('active');
+		$('.item_rp').css('display', 'inline-block');
+
+		var cat_filter, cat_id, item_id, items_id, cnt, flag;
+		cat_filter = $(this).data('cat');
+
+		$('.calSelectable.has_events').each(function (index) {			
+			cnt = 0;
+			flag = $(this).hasClass('active') ? 1 : 0;
+			items_id = $(this).attr('data-items');
+			var a = [];
+			if (String(items_id).match(/,/igm))
+				items_id = items_id.split(",");
+			else {
+				a.push(items_id.toString());
+				items_id = a;
+			}
+
+			$('.item_rp').each(function (index) {
+				cat_id = $(this).data('cat_id');
+				item_id = $(this).attr('data-item_id').toString();
+
+				if ($.inArray(item_id, items_id) == -1 || cat_id != cat_filter && cat_filter != 'all') {
+					if (flag) {
+						$(this).css('display', 'none');
+					}
+					cnt++;
+				}
+				else if ($('.sbarSearch').val() && $('.sbarSearch').val().length > 2) {
+					if (($(this).find('h3').text().indexOf($('.sbarSearch').val()) < 0 ) && ($(this).find('.place').text().indexOf($('.sbarSearch').val()) < 0))  {
+						$(this).css('display', 'none');
+						cnt++;
+					}
+				}
+			});
+			//$(this).attr('data_num', $('.item_rp').length - cnt);
+			if (flag) {
+				cnt == $('.item_rp').length ? $('.wrapper_available_rp .not_found').show() : $('.wrapper_available_rp .not_found').hide();
+			}
+		});
+	});
+	
+	$(document).on("click", '.calSelectable.has_events[data_num!="0"]', function () {		
+		$('.wrapper_available_rp .not_found').hide();
+	});		
+	$(document).on("click", '.calSelectable.has_events[data_num="0"]', function () {		
+		$('.wrapper_available_rp .not_found').show();
+	});
+
+	$('.wrapper_available_rp .sbarSearch').keyup(function (e) {
+		var cnt = len = 0;
+		var val = $(this).val();
+		if (e.keyCode == 13) {
+			$('.sbarSearch').blur();
+		}
+		if (val.length > 2 || e.which == 8 || e.which == 46) {
+			if (activity) {
+				display_items_activity();
+			} else {
+				$('.wrapper_available_rp .filter_line').click();
+			}
+		}
+
+	});
+	$('.wrapper-activities_select').find('select').on('change', function () {
+		display_items_activity();
+	});
+});
+
+function display_items_activity() {	
+	if ($('.calSelected.active.has_events').length == 0) {
+		return;
+	}
+	let cnt = 0;
+	items_id = $('.calSelected.active.has_events').attr('data-items');
+	if (items_id === undefined) {
+		$('.wrapper_available_rp .not_found').show();
+	}
+	var a = [];
+	if (String(items_id).match(/,/igm))
+		items_id = items_id.split(",");
+	else {
+		a.push(items_id.toString());
+		items_id = a;
+	}
+	let ac_payment = $("#ac_payment").children("option:selected").val();
+	let ac_kinds = $("#ac_kinds").children("option:selected").val();
+	let area = $("#area").children("option:selected").val();
+	$(".activity_cube").each(function () {
+		if (($(this).find('h3').text().indexOf($('.sbarSearch').val()) < 0 ) && ($(this).find('.place').text().indexOf($('.sbarSearch').val()) < 0))  {
+			$(this).hide();
+			return;
+		}
+
+		item_id = $(this).attr('data-item_id').toString();
+		if ($.inArray(item_id, items_id) == -1) {
+			$(this).hide();
+			return;
+		}
+		let tags = $(this).attr('data-tags');
+		if (ac_payment != -1 && !tags.includes(ac_payment)) {
+			$(this).hide();
+			return;
+		}
+		if (ac_kinds != -1 && !tags.includes(ac_kinds)) {
+			$(this).hide();
+			return;
+		}
+		if (area != -1 && !tags.includes(area)) {
+			$(this).hide();
+			return;
+		}
+		$(this).show();
+		cnt = cnt + 1;
+	});
+	//$('.wrapper_available_rp .not_found').hide(); 
+	cnt == 0 ? $('.wrapper_available_rp .not_found').show() : $('.wrapper_available_rp .not_found').hide();
+
+	$('.calSelectable.active').attr('data_num', cnt);
+}

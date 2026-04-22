@@ -16,8 +16,7 @@ public class Category {
 
     private String category;
 
-    @ManyToMany(mappedBy = "categories")
-    @JsonBackReference
+    @OneToMany(mappedBy = "category")
     @JsonIgnore
     private List<Trip> trips;
 

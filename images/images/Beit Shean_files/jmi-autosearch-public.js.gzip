@@ -1,0 +1,88 @@
+(function($) {
+    var lang = $('html').attr('lang');
+    lang = lang.substring(0, 2);
+    $(document).ready(function() {
+        $(function() {
+            $(".wp_autosearch_input").cn_autocomplete('/ajax-handler-wp-news-and-search.php', {
+                width: $(".wp_autosearch_form_wrapper").outerWidth(),
+                scroll: false,
+                minChars: 3,
+                //delay: wp_autosearch_config.ajax_delay,
+                //cacheLength: wp_autosearch_config.cache_length,
+                highlight: false,
+                matchSubset: false,
+                loadingClass: "wp_autosearch_indicator",
+                resultsClass: "wp_autosearch_suggestions",
+                max: 1000,
+                selectFirst: false,
+                extraParams: { action: "wi_get_search_results", lang: lang, security: '986340b9ae', postype: $('input[name="postype"]').val()  },
+                parse: function(data) {
+                    this.width = $(".wp_autosearch_form_wrapper").outerWidth();
+                    var parsed = [];
+                    var rows = data.split("|||");
+                    if(rows.length<4){
+                        $(".wp_autosearch_suggestions .addResult").remove();
+                    }
+                    for (var i = 0; i < 4; i++) {
+                        var row = $.trim(rows[i]);
+                        if (row) {
+                            parsed[parsed.length] = {
+                                data: row
+                            };
+                        }
+                    }
+                    return parsed;
+                },
+                formatItem: function(item) {
+                    return item;
+                }
+            }).result(function(e, item) {
+                var url = $(item).filter("a").attr("href");
+                var title = $(item).find(".searchheading").text();
+                if (title.length == 0) {
+                    title = $(item).data("q");
+                }
+                $(".wp_autosearch_input").val(title);
+                if (typeof url !== "undefined") {
+                    location.href = $(item).filter("a").attr("href");
+                }
+                $(".wp_autosearch_suggestions").mCustomScrollbar({
+                    theme: "dark-3",
+                    scrollButtons: {
+                        enable: true
+                    }
+                });
+            });
+        });
+    });
+})(jQuery);
+
+(function($) {
+    $(document).ready(function() {
+        $(function() {
+            $(".wp_autosearch_submit").click(function(e) {
+
+                e.preventDefault();
+                var category = $('.searchCat').val();
+                var $this = $(this);
+                console.log($this);
+                var full_search_url = $this.closest("#wizardinfosys_autosearch_form").attr("full_search_url");
+                var keyword = $this.siblings(".wp_autosearch_input").val();
+                if (!keyword) {
+                    $('.wp_autosearch_input').focus();
+                    return;
+                }
+                full_search_url = full_search_url.replace("%q%", keyword);
+                if (category)
+                    full_search_url = full_search_url.replace("%cat%", category);
+                else
+                    full_search_url = full_search_url.replace("%cat%", '');
+
+                location.href = full_search_url;
+
+
+
+            });
+        });
+    });
+})(jQuery);

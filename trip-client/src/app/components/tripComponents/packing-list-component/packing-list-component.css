@@ -1,0 +1,48 @@
+/* src/app/components/packing-list/packing-list.css */
+.packing-list-container {
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-top: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.packing-list-container h3 {
+    color: #4CAF50; /* ירוק */
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.loading-indicator {
+    text-align: center;
+    color: #007bff;
+    padding: 15px;
+}
+
+.error-message {
+    color: #dc3545; /* אדום */
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.packing-content {
+    /* עיצוב התוכן שמגיע מה-AI */
+    font-size: 1.05em;
+    line-height: 1.6;
+}
+
+/* עיצוב לרשימות שנוצרות ע"י ה-AI */
+.packing-content ul {
+    list-style-type: disc;
+    margin-right: 20px;
+    padding-right: 0;
+}
+
+.packing-content li {
+    margin-bottom: 8px;
+    color: #333;
+}

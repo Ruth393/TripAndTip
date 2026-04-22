@@ -24,8 +24,15 @@ public interface TripMapper {
         tripDTO.setCost(t.getCost());
         tripDTO.setMatch(t.getMatch());
         tripDTO.setImagePath(t.getImagePath());
-        tripDTO.setUser(userToSeeDTO(t.getUser()));
-        tripDTO.setCategories(t.getCategories());
+
+        // 👈 תיקון: בדוק אם t.getUser() אינו null לפני המיפוי
+        if (t.getUser() != null) {
+            tripDTO.setUser(userToSeeDTO(t.getUser()));
+        } else {
+            tripDTO.setUser(null);
+        }
+
+        tripDTO.setCategory(t.getCategory());
         tripDTO.setComments(t.getComments());
 
         if (t.getImagePath() != null && !t.getImagePath().trim().isEmpty()) {
@@ -37,16 +44,20 @@ public interface TripMapper {
         } else {
             tripDTO.setImage(null);
         }
-        if ( t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
-            try {
-                tripDTO.getUser().setImage(ImageUtils.getImage(t.getUser().getImagePath()));
-            } catch (IOException e) {
-                tripDTO.getUser().setImage(null);
-            }
-        } else {
-            tripDTO.getUser().setImage(null);
-        }
 
+        if (t.getUser() != null) {
+            if (t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
+                try {
+                    tripDTO.getUser().setImage(ImageUtils.getImage(t.getUser().getImagePath()));
+                } catch (IOException e) {
+                    tripDTO.getUser().setImage(null);
+                }
+            } else {
+                if (tripDTO.getUser() != null) {
+                    tripDTO.getUser().setImage(null);
+                }
+            }
+        }
 
         return tripDTO;
     }
@@ -56,8 +67,14 @@ public interface TripMapper {
 
         dto.setId(t.getId());
         dto.setName(t.getName());
+        dto.setDescription(t.getDescription());
         dto.setImagePath(t.getImagePath());
-        dto.setUser(userToSeeDTO(t.getUser()));
+
+        if (t.getUser() != null) {
+            dto.setUser(userToSeeDTO(t.getUser()));
+        } else {
+            dto.setUser(null);
+        }
 
         if (t.getImagePath() != null && !t.getImagePath().trim().isEmpty()) {
             try {
@@ -69,15 +86,20 @@ public interface TripMapper {
             dto.setImage(null);
         }
 
-        if ( t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
-            try {
-                dto.getUser().setImage(ImageUtils.getImage(t.getImagePath()));
-            } catch (IOException e) {
-                dto.getUser().setImage(null);
+        if (t.getUser() != null) {
+            if (t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
+                try {
+                    dto.getUser().setImage(ImageUtils.getImage(t.getUser().getImagePath()));
+                } catch (IOException e) {
+                    dto.getUser().setImage(null);
+                }
+            } else {
+                if (dto.getUser() != null) {
+                    dto.getUser().setImage(null);
+                }
             }
-        } else {
-            dto.getUser().setImage(null);
         }
+
         return dto;
     }
-    }
+}
