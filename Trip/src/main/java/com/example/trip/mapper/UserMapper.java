@@ -6,6 +6,7 @@ import com.example.trip.service.ImageUtils;
 import org.mapstruct.Mapper;
 
 import java.io.IOException;
+import java.util.List;
 
 @Mapper(componentModel="spring")
 public interface UserMapper {
@@ -18,6 +19,13 @@ public interface UserMapper {
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setImagePath(user.getImagePath());
+
+        if (user.getRoles() != null) {
+            List<String> roleNames = user.getRoles().stream()
+                    .map(role -> role.getName().name())
+                    .toList();
+            dto.setRoles(roleNames);
+        }
 
         if (user.getImagePath() != null && !user.getImagePath().trim().isEmpty()) {
             try {

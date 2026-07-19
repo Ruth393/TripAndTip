@@ -6,6 +6,7 @@ import com.example.trip.dto.TripListDTO;
 import com.example.trip.mapper.TripMapper;
 import com.example.trip.model.Trip;
 import com.example.trip.model.Users;
+import com.example.trip.security.CustomUserDetails;
 import com.example.trip.service.AIChatService;
 import com.example.trip.service.ImageUtils;
 import com.example.trip.service.TripRepository;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +57,11 @@ public class TripController {
         }
     }
 
+    // תוקן: שימוש ב-findByIdWithComments כדי לטעון comments בתוך אותה טרנזקציה
+    // ולמנוע LazyInitializationException כש-tripMapper.tripToDto ניגש ל-getComments()
     @GetMapping("/getTripById/{id}")
     public ResponseEntity<TripDTO> get(@PathVariable long id) throws IOException {
-        return tripRepository.findById(id)
+        return tripRepository.findByIdWithComments(id)
                 .map(t -> {
                     try {
                         return new ResponseEntity<>(tripMapper.tripToDto(t), HttpStatus.OK);
@@ -90,11 +94,13 @@ public class TripController {
         }
     }
 
+
+
     @PostMapping(value = "/uploadTrip", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TripDTO> uploadTripWithImage(@RequestPart("image") MultipartFile file, @RequestPart("trip") Trip t) {
         try {
-            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Users currentUser = userRepository.findByUserName(userDetails.getUsername());
+            CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Users currentUser = userRepository.findByEmail(userDetails.getEmail());
 
             if (currentUser == null) return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
             t.setUser(currentUser);
@@ -107,6 +113,35 @@ public class TripController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // ─── DELETE /deleteTripByAdmin/{id} ─────────────────────────────────
+// פונקציה המאפשרת רק למנהל מערכת למחוק כל טיול שקיים באתר
+    @DeleteMapping("/deleteTripByAdmin/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteTripByAdmin(@PathVariable Long id) {
+        if (!tripRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("הטיול לא נמצא");
+        }
+        tripRepository.deleteById(id);
+        return ResponseEntity.ok("הטיול נמחק בהצלחה על ידי מנהל המערכת");
+    }
+
+    // ─── GET /admin/dashboard-stats ─────────────────────────────────────
+// פונקציה מעניינת שמחזירה למנהל נתונים סטטיסטיים להצגה ב-Dashboard באנגולר
+    @GetMapping("/admin/dashboard-stats")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> getDashboardStats() {
+        long totalTrips = tripRepository.count();
+        long totalUsers = userRepository.count(); // דורש שיהיה מוזרק UserRepository ב-Controller
+
+        // ניצור מבנה נתונים פשוט שיחזור כ-JSON
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("totalTrips", totalTrips);
+        stats.put("totalUsers", totalUsers);
+
+        return ResponseEntity.ok(stats);
+    }
+
 
     @GetMapping(value = "/packingList/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<String>> getPackingList(@PathVariable long id) {

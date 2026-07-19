@@ -16,6 +16,7 @@ public class SignInDTO {
 
     @NotBlank(message = "נדרש מייל המשתמש")
     private String email;
+    private List<String> roles;
     private String image;
     private String imagePath;
 
@@ -56,4 +57,11 @@ public class SignInDTO {
     }
 
 
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
 }

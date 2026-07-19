@@ -89,7 +89,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers("/api/user/signUp", "/api/user/signIn").permitAll()
                                 .requestMatchers("/api/user/get").hasRole("ADMIN")
-                                .requestMatchers("/api/user/users").hasRole("ADMIN")
+                                .requestMatchers("/api/user/users").hasAuthority("ADMIN")
                                 .requestMatchers("/api/user/me").permitAll()
                                 .requestMatchers("/api/category/addCategory").hasRole("ADMIN")
                                 .requestMatchers("/api/trip/trips").permitAll()
@@ -104,6 +104,11 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/trip/tripsByCategoryId/{id}").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                // אבטחת נתיבי הניהול החדשים - רק מי שהוא ROLE_ADMIN רשאי לגשת אליהם
+                                .requestMatchers("/api/user/changeRole/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/user/banUser/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/trip/deleteTripByAdmin/**").hasAuthority("ADMIN")
+                                .requestMatchers("/api/trip/admin/dashboard-stats").hasAuthority("ADMIN")
                                 .anyRequest().authenticated()
                 );
 
