@@ -23,6 +23,28 @@ export class TripListComponent implements OnInit {
   public tripList: TripListDTO[] = [];
   public categories: Category[] = [];
   public selectedCategoryId: number | null = null;
+  public isAdmin: boolean = false;
+
+  updateTripsUserImage(updatedUser: { id?: number; image?: string; imagePath?: string; imageUrl?: string }): void {
+    if (!updatedUser?.id) {
+      return;
+    }
+
+    this.tripList = this.tripList.map(trip => {
+      if (trip.user?.id === updatedUser.id) {
+        return {
+          ...trip,
+          user: {
+            ...trip.user,
+            image: updatedUser.image ?? trip.user.image,
+            imagePath: updatedUser.imagePath ?? trip.user.imagePath,
+            imageUrl: updatedUser.imageUrl ?? trip.user.imageUrl
+          }
+        };
+      }
+      return trip;
+    });
+  }
 
   public loading = false;
   public error: string | null = null;
@@ -36,6 +58,13 @@ export class TripListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this._userService.getCurrentUser().subscribe(user => {
+      if (user?.id) {
+        this.updateTripsUserImage(user);
+      }
+      this.isAdmin = !!user && !!(user.isAdmin || user.roles?.includes('ROLE_ADMIN') || user.authorities?.includes('ROLE_ADMIN'));
+    });
+
     this.loadTrips();
     this.loadCategories();
 
@@ -54,6 +83,10 @@ export class TripListComponent implements OnInit {
     this._tripService.getTrips().subscribe({
       next: (res) => {
         this.tripList = res || [];
+        const currentUser = this._userService['currentUserSubject']?.value;
+        if (currentUser?.id) {
+          this.updateTripsUserImage(currentUser);
+        }
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -129,9 +162,29 @@ export class TripListComponent implements OnInit {
     this.router.navigate(['/trip-details', trip.id], { state: { trip } });
   }
 
-  addNewTrip() {
-    this.router.navigate(['/upload-trip']);
-  }
+  addNewTrip(): void {
+    this.router.navigate(['/upload-trip']);
+  }
+
+  deleteTrip(trip: TripListDTO): void {
+    if (!this.isAdmin || !trip.id) {
+      return;
+    }
+
+    const confirmed = window.confirm('האם אתה בטוח שברצונך למחוק את הטיול הזה?');
+    if (!confirmed) {
+      return;
+    }
+
+    this._tripService.deleteTripByAdmin(trip.id).subscribe({
+      next: () => {
+        this.tripList = this.tripList.filter(item => item.id !== trip.id);
+      },
+      error: err => {
+        console.error('Failed to delete trip', err);
+      }
+    });
+  }
 
   getImageSrc(trip: TripListDTO): string {
     const raw = trip.image || trip.imagePath;

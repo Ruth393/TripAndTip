@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
 
   <!-- לוגו ראשי -->
-  <img src="assets/logo.png" alt="Trip Logo" class="toolbar-logo">
+  <img [src]="logoSrc" alt="לוגו טיולים" class="toolbar-logo">
 
   <!-- תמונת פרופיל משתמש עם תפריט ההיגיון -->
   <ng-container *ngIf="user$ | async as user">
@@ -12,15 +12,32 @@
          (mouseenter)="onProfileMouseEnter(menuTrigger)"
          (mouseleave)="onProfileMouseLeave(menuTrigger)"
          (click)="onProfileClick(menuTrigger)">
-      <img
-        [src]="previewUrl || getProfileImage(user)"
-        class="toolbar-logo profile-image"
-        alt="תמונת פרופיל">
+      <ng-container *ngIf="hasProfileImage(user); else initialsAvatar">
+        <img
+          [src]="previewUrl || getProfileImage(user)"
+          class="toolbar-logo profile-image"
+          alt="תמונת פרופיל">
+      </ng-container>
+
+      <ng-template #initialsAvatar>
+        <div class="avatar-circle avatar-circle-small" [style.background-color]="getAvatarColor(user)">
+          <span>{{ getAvatarInitial(user) }}</span>
+        </div>
+      </ng-template>
     </div>
 
     <mat-menu #profileMenu="matMenu" class="profile-menu" overlapTrigger="false" panelClass="profile-overlay-menu">
       <div class="profile-menu-content" (mouseenter)="onProfileMouseEnter(menuTrigger)" (mouseleave)="onProfileMouseLeave(menuTrigger)">
-        <img [src]="previewUrl || getProfileImage(user)" class="profile-menu-img" alt="תמונת פרופיל">
+        <ng-container *ngIf="hasProfileImage(user); else initialsAvatarMenu">
+          <img [src]="previewUrl || getProfileImage(user)" class="profile-menu-img" alt="תמונת פרופיל">
+        </ng-container>
+
+        <ng-template #initialsAvatarMenu>
+          <div class="avatar-circle avatar-circle-large" [style.background-color]="getAvatarColor(user)">
+            <span>{{ getAvatarInitial(user) }}</span>
+          </div>
+        </ng-template>
+
         <p class="profile-name">{{ user.name || user.name }}</p>
         <p class="profile-email">{{ user.email }}</p>
 
@@ -46,10 +63,17 @@
 
   <a mat-button routerLink="/list-trips">עמוד הבית</a>
   <a mat-button routerLink="/upload-trip">להעלות טיול</a>
+  <ng-container *ngIf="user$ | async as user">
+    <a *ngIf="isAdminUser(user)" mat-button routerLink="/admin-dashboard">Dashboard מנהל</a>
+  </ng-container>
   <span class="separator-bar">|</span>
   <ng-container *ngIf="!(user$ | async)">
     <a mat-button routerLink="/welcome">להירשם/להכנס</a>
   </ng-container>
+
+  <button mat-icon-button class="theme-toggle-btn" (click)="toggleTheme()" [attr.aria-label]="isDarkMode ? 'החלף למצב בהיר' : 'החלף למצב כהה'">
+    <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
   <!-- sign out now lives inside the profile menu -->
 
 </mat-toolbar>

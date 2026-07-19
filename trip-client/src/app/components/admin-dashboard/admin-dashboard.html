@@ -1,0 +1,58 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <div>
+      <h1>לוח מנהל</h1>
+      <p>ניהול טיולים, סטטיסטיקות ותמיכה בפעולות מערכת.</p>
+    </div>
+    <a routerLink="/list-trips" class="back-link">חזור לאפליקציה</a>
+  </div>
+
+  <div *ngIf="error" class="error-box">{{ error }}</div>
+
+  <div *ngIf="!error" class="dashboard-grid">
+    <div class="stat-card primary-card">
+      <div class="stat-title">טיולים פעילים</div>
+      <div class="stat-value">{{ stats.totalTrips }}</div>
+      <div class="stat-note">טיולים שנמצאים במערכת כרגע</div>
+    </div>
+
+    <div class="stat-card secondary-card">
+      <div class="stat-title">משתמשים רשומים</div>
+      <div class="stat-value">{{ stats.totalUsers }}</div>
+      <div class="stat-note">משתמשים רשומים עם גישה למערכת</div>
+    </div>
+
+    <div class="stat-card tertiary-card">
+      <div class="stat-title">טיולים להצגה</div>
+      <div class="stat-value">{{ trips.length }}</div>
+      <div class="stat-note">מספר הטיולים שנטענו עבור ניהול</div>
+    </div>
+  </div>
+
+  <div class="trips-section">
+    <div class="section-header">
+      <h2>טיולים ברשימה</h2>
+      <span class="section-note">ניתן למחוק טיול ישירות כאן.</span>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-message">טוען טיולים...</div>
+    <div *ngIf="!isLoading && trips.length === 0" class="empty-message">לא נמצאו טיולים להצגה.</div>
+
+    <div *ngIf="!isLoading && trips.length > 0" class="trip-table">
+      <div class="table-header">
+        <span>שם טיול</span>
+        <span>קטגוריה</span>
+        <span>משתמש</span>
+        <span>עלות</span>
+        <span>פעולה</span>
+      </div>
+      <div *ngFor="let trip of trips" class="table-row">
+        <span>{{ trip.name }}</span>
+        <span>{{ formatCategory(trip.category) }}</span>
+        <span>{{ trip.user.userName || 'לא ידוע' }}</span>
+        <span>{{ trip.cost | currency:'ILS':'symbol' }}</span>
+        <button class="delete-button" (click)="deleteTrip(trip.id)">מחק</button>
+      </div>
+    </div>
+  </div>
+</div>

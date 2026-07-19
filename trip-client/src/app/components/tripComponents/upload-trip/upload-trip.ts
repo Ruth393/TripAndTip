@@ -34,7 +34,7 @@ export class UploadTrip implements OnInit {
     description: '',
     cost: 0,
     match: '',
-    users: { id: 0 },
+    user: { id: 0 },
     category: { id: 0 },
   };
 
@@ -57,8 +57,8 @@ export class UploadTrip implements OnInit {
         this.currentUser = user;
         this.isUserLoggedIn = !!user?.id;
         if (this.isUserLoggedIn && user?.id) {
-          // fill the trip object with the logged‑in user's id
-          this.newTrip.users.id = user.id;
+          // keep the upload payload aligned with the authenticated user
+          this.newTrip.user = { id: user.id };
         }
 
         // if we were waiting for login and returned back, immediately attempt upload
@@ -112,29 +112,29 @@ export class UploadTrip implements OnInit {
       return;
     }
 
-    if (!this.isUserLoggedIn) {
+const loggedInUserId = this.currentUser?.id ?? this.newTrip.user?.id ?? 0;
+    if (!this.isUserLoggedIn && !loggedInUserId) {
       // user must login before uploading, redirect to sign-in page
       this.errorMessage = 'עליך להתחבר כדי לשלוח את הטיול';
       this.router.navigate(['/sign-in']);
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.pendingUpload = false;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.pendingUpload = false;
+    this.newTrip.user = { id: loggedInUserId };
 
-    const formData = new FormData();
-    // include logged‑in user id if available (backend may need it)
+    const formData = new FormData();
     const tripObject: any = {
       name: this.newTrip.name,
       description: this.newTrip.description,
       cost: this.newTrip.cost,
       match: this.newTrip.match,
-      category: { id: this.newTrip.category.id }
+      category: { id: this.newTrip.category.id },
+      user: { id: loggedInUserId },
+      users: { id: loggedInUserId }
     };
-    if (this.currentUser?.id) {
-      tripObject.users = { id: this.currentUser.id };
-    }
 
     formData.append('trip', new Blob([JSON.stringify(tripObject)], { type: 'application/json' }));
     formData.append('image', this.selectedFile, this.selectedFile.name);

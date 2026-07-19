@@ -1,102 +1,100 @@
 <div class="details-container">
-
-  <h1 class="title">פרטי טיול</h1>
-
-  <!-- Loading -->
-  <div *ngIf="!TripToShow" class="loading text-center">
-    טוען פרטי טיול...
-  </div>
-
-  <ng-container *ngIf="TripToShow">
-
-    <!-- Owner section -->
-    <div class="owner-section" *ngIf="TripToShow.user">
-      <img class="user-avatar" [src]="getUserImage()" alt="תמונת משתמש">
-      <div class="owner-info">
-        <div class="added-by"></div>
-        <div class="owner-name">{{ TripToShow.user.userName }}</div>
+  <div class="details-card">
+    <div class="details-hero">
+      <div>
+        <h1 class="title">פרטי טיול</h1>
+        <p class="subtitle">סקירה מלאה של הטיול, הפרטים והתגובות</p>
       </div>
     </div>
 
-    <!-- Trip image -->
-    <div class="trip-image-section">
-      <img class="trip-image" [src]="getTripImage()" alt="תמונת הטיול"
-           *ngIf="TripToShow.image || TripToShow.imagePath; else noTripImg">
-      <ng-template #noTripImg>
-        <div class="no-trip-img">אין תמונה לטיול זה</div>
-      </ng-template>
+    <div *ngIf="!TripToShow" class="loading">
+      טוען פרטי טיול...
     </div>
 
-    <!-- Trip info -->
-    <div class="trip-info-container">
-      <div class="form-group">
-        <label>שם טיול</label>
-        <input type="text" [value]="TripToShow.name" readonly>
-      </div>
-      <div class="form-group">
-        <label>תיאור</label>
-        <textarea rows="3" readonly>{{ TripToShow.description }}</textarea>
-      </div>
-      <div class="form-group">
-        <label>עלות</label>
-        <input type="text" [value]="TripToShow.cost || 'לא צוין'" readonly>
-      </div>
-      <div class="form-group">
-        <label>התאמה</label>
-        <input type="text" [value]="TripToShow.match || 'לא צוין'" readonly>
-      </div>
-      <div class="form-group">
-        <label> איזור הטיול</label>
-        <input type="text" [value]="TripToShow.category!.category || 'אזור לא מוגדר'" readonly>
-      </div>
-    </div>
+    <ng-container *ngIf="TripToShow">
+      <div class="hero-grid">
+        <div class="trip-media">
+          <div class="owner-section" *ngIf="TripToShow.user">
+            <img class="user-avatar" [src]="getUserImage()" alt="תמונת משתמש">
+            <div class="owner-info">
+              <div class="owner-name">{{ TripToShow.user.userName }}</div>
+            </div>
+          </div>
 
-    <hr>
+          <div class="trip-image-section">
+            <img class="trip-image" [src]="getTripImage()" alt="תמונת הטיול"
+                 *ngIf="TripToShow.image || TripToShow.imagePath; else noTripImg">
+            <ng-template #noTripImg>
+              <div class="no-trip-img">אין תמונה לטיול זה</div>
+            </ng-template>
+          </div>
+        </div>
 
-    <!-- Packing list + chat -->
-    <div class="ai-section">
-
-      <!-- Packing list -->
-      <div class="packing-list-wrapper">
-        <app-packing-list *ngIf="TripToShow?.id" [tripId]="TripToShow.id"></app-packing-list>
+        <div class="trip-info-card">
+          <div class="trip-info-container">
+            <div class="form-group">
+              <label>שם טיול</label>
+              <input type="text" [value]="TripToShow.name" readonly>
+            </div>
+            <div class="form-group">
+              <label>תיאור</label>
+              <textarea rows="3" readonly>{{ TripToShow.description || 'לא נכתב תיאור' }}</textarea>
+            </div>
+            <div class="form-group">
+              <label>עלות</label>
+              <input type="text" [value]="TripToShow.cost || 'לא צוין'" readonly>
+            </div>
+            <div class="form-group">
+              <label>התאמה</label>
+              <input type="text" [value]="TripToShow.match || 'לא צוין'" readonly>
+            </div>
+            <div class="form-group">
+              <label>איזור הטיול</label>
+              <input type="text" [value]="TripToShow.category.category || 'אזור לא מוגדר'" readonly>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Chat section -->
-      <div class="chat-section">
-        <!-- <app-trip-chat [tripId]="TripToShow.id"></app-trip-chat> -->
+      <hr>
+
+      <div class="ai-section">
+        <div class="packing-list-wrapper">
+          <app-packing-list *ngIf="TripToShow.id" [tripId]="TripToShow.id"></app-packing-list>
+        </div>
+        <div class="chat-section">
+          <app-chat-box *ngIf="TripToShow.id" [tripId]="TripToShow.id"></app-chat-box>
+        </div>
       </div>
-    </div>
 
-    <hr>
+      <hr>
 
-    <!-- Comments -->
-    <div class="comments-main-section">
-      <div class="comments-header">
-        <h3>תגובות ({{ commentsCount }})</h3>
-        <button class="btn-add-comment" (click)="showAddForm = !showAddForm">
-          {{ showAddForm ? 'בטל' : 'הוסף תגובה' }}
+      <div class="comments-card">
+        <div class="comments-header">
+          <h3>תגובות ({{ commentsCount }})</h3>
+          <button class="btn-add-comment" (click)="showAddForm = !showAddForm">
+            {{ showAddForm ? 'בטל' : 'הוסף תגובה' }}
+          </button>
+        </div>
+
+        <app-add-comment
+          *ngIf="showAddForm"
+          [tripId]="TripToShow.id"
+          (commentAdded)="onCommentAdded($event)">
+        </app-add-comment>
+
+        <app-list-comments
+          #listCommentsRef
+          [id]="TripToShow.id"
+          (commentsCountChange)="onCommentsCountChange($event)">
+        </app-list-comments>
+      </div>
+
+      <div class="button-group">
+        <button type="button" (click)="goPreviousPage()" class="btn btn-secondary">
+          חזרה
         </button>
       </div>
-
-      <app-add-comment 
-        *ngIf="showAddForm"
-        [tripId]="TripToShow.id"
-        (commentAdded)="onCommentAdded($event)">
-      </app-add-comment>
-
-      <app-list-comments 
-        #listCommentsRef
-        [id]="TripToShow.id"
-        (commentsCountChange)="onCommentsCountChange($event)">
-      </app-list-comments>
-    </div>
-
-    <!-- Back button -->
-    <div class="button-group">
-      <button type="button" (click)="goPreviousPage()" class="btn btn-secondary">
-        חזרה
-      </button>
-    </div>
-
-  </ng-container>
+    </ng-container>
+  </div>
 </div>

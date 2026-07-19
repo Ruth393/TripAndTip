@@ -1,67 +1,79 @@
 <div class="list-container">
   <mat-card class="main-card">
-
-    <mat-card-header>
-      <mat-card-title class="title">רשימת הטיולים שלי</mat-card-title>
-      <div class="controls-bar">
-        <button mat-raised-button color="primary" (click)="loadTripsByCurrentUser()">
-          <mat-icon>refresh</mat-icon>
-          תביא את הטיולים שלי
-        </button>
+    <mat-card-header class="page-header">
+      <div class="header-content">
+        <div>
+          <mat-card-title class="title">רשימת הטיולים שלי</mat-card-title>
+          <p class="subtitle">גלו, חפשו ונסעו עם טיולים מסודרים, נקיים ומאורגנים</p>
+        </div>
+        <div class="controls-bar">
+          <button mat-raised-button color="primary" (click)="loadTripsByCurrentUser()">
+            <mat-icon>refresh</mat-icon>
+            תביא את הטיולים שלי
+          </button>
+        </div>
       </div>
     </mat-card-header>
 
     <mat-card-content class="content">
-      
-      <!-- סינון אוטומטי לפי קטגוריה -->
-      <div class="filter-bar">
-        <mat-form-field appearance="fill">
-          <mat-label>בחר קטגוריה</mat-label>
-          <mat-select [(value)]="selectedCategoryId" (selectionChange)="filterTripsByCategory()">
-            <mat-option [value]="null">הצג הכל</mat-option>
-            <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.category }}</mat-option>
-          </mat-select>
-        </mat-form-field>
+      <div class="toolbar">
+        <div class="filter-bar">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>בחר קטגוריה</mat-label>
+            <mat-select [(value)]="selectedCategoryId" (selectionChange)="filterTripsByCategory()">
+              <mat-option [value]="null">הצג הכל</mat-option>
+              <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.category }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="top-actions">
+          <button mat-fab color="accent" (click)="addNewTrip()" class="add-btn">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
       </div>
 
-      <div class="top-actions">
-        <button mat-fab color="accent" (click)="addNewTrip()" class="add-btn">
-          <mat-icon>add</mat-icon>
-        </button>
-      </div>
-
-      <div *ngIf="loading" class="loading text-center">טוען טיולים...</div>
+      <div *ngIf="loading" class="loading">טוען טיולים...</div>
       <mat-error *ngIf="error">{{ error }}</mat-error>
 
-      <div *ngIf="!loading && tripList!.length > 0" class="trips-grid">
+      <div *ngIf="!loading && tripList && tripList.length > 0; else noTrips" class="trips-grid">
         <mat-card *ngFor="let trip of tripList" class="trip-card">
-          <img [src]="getImageSrc(trip)" alt="{{ trip.name }}" class="trip-image">
+          <div class="image-shell">
+            <img [src]="getImageSrc(trip)" alt="{{ trip.name }}" class="trip-image">
+          </div>
 
-          <mat-card-header>
-            <mat-card-title>{{ trip.name }}</mat-card-title>
-          </mat-card-header>
+          <div class="card-body">
+            <mat-card-header class="trip-header">
+              <mat-card-title class="trip-title">{{ trip.name }}</mat-card-title>
+            </mat-card-header>
 
-          <mat-card-content class="trip-content">
-            <div *ngIf="trip.description?.length; else noDesc">{{ trip.description }}</div>
-            <ng-template #noDesc>
-              <div class="no-desc">אין תיאור לטיול זה</div>
-            </ng-template>
+            <mat-card-content class="trip-content">
+              <div class="trip-description" *ngIf="trip.description.length; else noDesc">{{ trip.description }}</div>
+              <ng-template #noDesc>
+                <div class="no-desc">אין תיאור לטיול זה</div>
+              </ng-template>
 
-            <div class="owner-section">
-              <img [src]="getUserAvatarSrc(trip)" class="user-avatar" alt="User">
-              <div class="owner-info">
-                <div class="added-by">הוסיף הטיול</div>
-                <div class="owner-name">{{ trip.user?.userName || 'משתמש אנונימי' }}</div>
+              <div class="owner-section">
+                <img [src]="getUserAvatarSrc(trip)" class="user-avatar" alt="User">
+                <div class="owner-info">
+                  <div class="added-by">הוסיף הטיול</div>
+                  <div class="owner-name">{{ trip.user.userName || 'משתמש אנונימי' }}</div>
+                </div>
               </div>
-            </div>
-          </mat-card-content>
+            </mat-card-content>
 
-          <mat-card-actions align="end">
-            <button mat-stroked-button color="primary" (click)="showDetails(trip)">
-              <mat-icon>arrow_forward</mat-icon>
-              פרטים מלאים
-            </button>
-          </mat-card-actions>
+            <mat-card-actions class="card-actions">
+              <button mat-stroked-button color="primary" (click)="showDetails(trip)">
+                <mat-icon>arrow_forward</mat-icon>
+                פרטים מלאים
+              </button>
+              <button mat-stroked-button color="warn" *ngIf="isAdmin" (click)="deleteTrip(trip)">
+                <mat-icon>delete</mat-icon>
+                מחק טיול
+              </button>
+            </mat-card-actions>
+          </div>
         </mat-card>
       </div>
 
@@ -71,7 +83,6 @@
           <p>אין טיולים כרגע...<br>תהיי הראשונה להוסיף!</p>
         </div>
       </ng-template>
-
     </mat-card-content>
   </mat-card>
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../material.module';
 import { UserService } from '../service/user.service';
@@ -13,9 +13,45 @@ import { MatMenuTrigger } from '@angular/material/menu';
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   private userService = inject(UserService);
   user$ = this.userService.currentUser$;
+  isDarkMode = false;
+  logoLight = 'assets/logo.png';
+  logoDark = 'assets/logoW.png';
+
+  ngOnInit(): void {
+    const savedTheme = typeof window !== 'undefined' ? window.localStorage.getItem('app-theme') : null;
+    this.isDarkMode = savedTheme === 'dark';
+    this.applyTheme();
+  }
+
+  get logoSrc(): string {
+    return this.isDarkMode ? this.logoDark : this.logoLight;
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    this.applyTheme();
+  }
+
+  isAdminUser(user: any): boolean {
+    return !!user && (user.isAdmin || user.roles?.includes('ROLE_ADMIN') || user.authorities?.includes('ROLE_ADMIN'));
+  }
+
+  private applyTheme(): void {
+    const root = typeof document !== 'undefined' ? document.body : null;
+    if (!root) {
+      return;
+    }
+
+    root.classList.toggle('dark-theme', this.isDarkMode);
+    root.classList.toggle('light-theme', !this.isDarkMode);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('app-theme', this.isDarkMode ? 'dark' : 'light');
+    }
+  }
 
   // if the user selects a new picture we show it immediately while waiting for
   // the server to respond; stored as a data URL so it works regardless of
@@ -56,17 +92,52 @@ export class HeaderComponent {
     trigger.toggleMenu();
   }
 
-getProfileImage(user: any): string {
-  if (!user?.image) return 'assets/A1.png';
+getProfileImage(user: any): string | null {
+  const imageValue = user?.image || user?.imageUrl || user?.imagePath;
+  if (!imageValue || typeof imageValue !== 'string') {
+    return null;
+  }
 
-  if (user.image.startsWith('http')) {
-    return user.image + '?v=' + new Date().getTime();
+  const normalized = imageValue.trim();
+  if (!normalized) {
+    return null;
   }
-  
-  if (user.image.startsWith('data:')) {
-    return user.image;
+
+  if (normalized.startsWith('http')) {
+    return normalized + '?v=' + new Date().getTime();
   }
-  return 'data:image/jpeg;base64,' + user.image;
+
+  if (normalized.startsWith('data:')) {
+    return normalized;
+  }
+
+  if (normalized.startsWith('/9j/') || normalized.startsWith('iVBORw')) {
+    return 'data:image/jpeg;base64,' + normalized;
+  }
+
+  return `http://localhost:8080/images/${normalized}`;
+}
+
+hasProfileImage(user: any): boolean {
+  return Boolean(this.previewUrl || this.getProfileImage(user));
+}
+
+getAvatarInitial(user: any): string {
+  const name = String(user?.name || user?.userName || user?.email || '').trim();
+  const firstLetter = name.match(/[A-Za-z]/)?.[0];
+  return firstLetter ? firstLetter.toUpperCase() : '?';
+}
+
+getAvatarColor(user: any): string {
+  const seed = String(user?.id ?? user?.email ?? user?.name ?? user?.userName ?? 'user').toLowerCase();
+  let hash = 0;
+
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue} 70% 45%)`;
 }
 
   onLogoError(event: Event) {

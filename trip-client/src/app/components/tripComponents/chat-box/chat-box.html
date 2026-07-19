@@ -1,0 +1,27 @@
+<div class="chat-box">
+  <div class="chat-header">
+    <h3>צ'אט AI</h3>
+    <p>שוחחו עם הנגן למידע והמלצות על הטיול.</p>
+  </div>
+
+  <div class="message-list">
+    <div *ngFor="let line of chatLines" [ngClass]="{ 'user-message': line.sender === 'user', 'assistant-message': line.sender === 'assistant' }" class="message-item">
+      <div class="message-role">{{ line.sender === 'user' ? 'אתה' : 'AI' }}</div>
+      <div class="message-text">{{ line.text }}</div>
+      <div *ngIf="line.isStreaming" class="streaming-indicator">טוען...</div>
+    </div>
+  </div>
+
+  <div class="chat-form">
+    <textarea
+      rows="3"
+      [(ngModel)]="message"
+      placeholder="כתוב כאן את השאלה שלך..."
+      [disabled]="isSending"></textarea>
+    <button type="button" class="send-button" (click)="sendMessage()" [disabled]="isSending || !message.trim()">
+      שלח
+    </button>
+  </div>
+
+  <div *ngIf="errorMessage" class="chat-error">{{ errorMessage }}</div>
+</div>

@@ -21,7 +21,7 @@ name! :string
 description! :string
 cost! :number
 match! :string
-users!: {id:number}
+user!: {id:number}
 category! :{id: number}
 imageUrl?: string
 imagePath?: string
@@ -30,6 +30,7 @@ export  class TripListDTO{
 id! :number
 name! :string
 description! :string
+cost?: number
 user! :UserToSeeDTO
 category! :{id: number, name?: ""}
 image?: string

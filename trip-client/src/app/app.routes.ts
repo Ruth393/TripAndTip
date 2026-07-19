@@ -10,7 +10,7 @@ import { WelcomeComponent } from './welcome/welcome.component';
 import { AddCategory } from './components/categoryComponents/add-category/add-category';
 import { SignOutComponent } from './components/userComponents/sign-out/sign-out';
 import { ListComments } from './components/commentComponents/list-comments/list-comments';
-
+import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 
 export const routes: Routes = [
     {path: "", redirectTo: "list-trips", pathMatch:'full'},
@@ -24,5 +24,6 @@ export const routes: Routes = [
     {path: "list-components/:id", component:ListComments},
     {path: "trip-details/:id", component:TripDetails},
     {path: "add-category", component:AddCategory},
+    {path: "admin-dashboard", component: AdminDashboard},
     {path: "**", component:UnFoundComponent}
 ];

@@ -31,6 +31,18 @@ export class ChatService {
     );
   }
 
+  getChatStream(message: string, conversationId: string): Observable<string> {
+    const url = `${this.baseUrl}/chat`;
+    const payload = { message, conversationId };
+
+    return this.createFetchStream(url, payload, 'POST').pipe(
+      catchError(err => {
+        console.warn('Chat streaming failed, falling back to regular request', err);
+        return this.http.post(url, payload, { responseType: 'text' });
+      })
+    );
+  }
+
   /**
    * מתודה גנרית ליצירת זרם נתונים מול ה-Backend
    */

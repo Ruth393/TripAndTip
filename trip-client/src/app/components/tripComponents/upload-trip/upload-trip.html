@@ -1,121 +1,121 @@
 <div class="upload-container">
-  <div class="upload-card">
-    <h1>Upload Trip</h1>
-    
-        <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+  <div class="upload-card">
+    <h1>העלאת טיול</h1>
 
-    <form #AddForm="ngForm">
-            <div class="form-group image-upload-area">
-        <label for="image">Trip Image *</label>
-                <input 
-          id="image"
-          type="file" 
-          name="image" 
-          accept="image/*" 
-          (change)="onFileSelected($event)"
-          #fileInput 
-          style="display: none;">
-                <div class="image-placeholder" (click)="triggerFileInput()" [class.has-image]="imagePreview">
-          <img *ngIf="imagePreview" [src]="imagePreview" alt="Image Preview" class="preview-image">
-          <div *ngIf="!imagePreview" class="placeholder-text">
-            לחץ כאן לבחירת תמונה
-          </div>
-        </div>
-        
-        <small *ngIf="!selectedFile" class="error">Image is required</small>
-      </div>
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
 
-            <div class="form-group">
-        <label for="name">Trip Name *</label>
-        <input 
-          id="name"
-          type="text" 
-          [(ngModel)]="newTrip.name" 
-          name="name" 
-          required 
-          minlength="5"
-          #name="ngModel"
-          placeholder="Enter trip name (min 5 characters)"
-          [class.is-invalid]="name.invalid && (name.dirty || name.touched)">
-        <small *ngIf="name.invalid && (name.dirty || name.touched)" class="error">
-          Name is required and must be at least 5 characters
-        </small>
-      </div>
+    <form #AddForm="ngForm">
+      <div class="form-group image-upload-area">
+        <label for="image">תמונת טיול *</label>
+        <input
+          id="image"
+          type="file"
+          name="image"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          #fileInput
+          style="display: none;">
+        <div class="image-placeholder" (click)="triggerFileInput()" [class.has-image]="imagePreview">
+          <img *ngIf="imagePreview" [src]="imagePreview" alt="תצוגה מקדימה" class="preview-image">
+          <div *ngIf="!imagePreview" class="placeholder-text">
+            לחץ כאן לבחירת תמונה
+          </div>
+        </div>
 
-            <div class="form-group">
-        <label for="description">Description</label>
-        <textarea 
-          id="description"
-          [(ngModel)]="newTrip.description" 
-          name="description"
-          placeholder="Enter trip description"
-          rows="3"></textarea>
-      </div>
+        <small *ngIf="!selectedFile" class="error">יש לבחור תמונה</small>
+      </div>
 
-            <div class="form-group">
-        <label for="cost">Cost</label>
-        <input 
-          id="cost"
-          type="text" 
-          [(ngModel)]="newTrip.cost" 
-          name="cost"
-          placeholder="Enter trip cost">
-      </div>
+      <div class="form-group">
+        <label for="name">שם טיול *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="newTrip.name"
+          name="name"
+          required
+          minlength="5"
+          #name="ngModel"
+          placeholder="הכנס שם טיול (לפחות 5 תווים)"
+          [class.is-invalid]="name.invalid && (name.dirty || name.touched)">
+        <small *ngIf="name.invalid && (name.dirty || name.touched)" class="error">
+          יש להזין שם טיול באורך של לפחות 5 תווים
+        </small>
+      </div>
 
-            <div class="form-group">
-        <label for="match">Match</label>
-        <input 
-          id="match"
-          type="text" 
-          [(ngModel)]="newTrip.match" 
-          name="match"
-          placeholder="Enter match details">
-      </div>
+      <div class="form-group">
+        <label for="description">תיאור</label>
+        <textarea
+          id="description"
+          [(ngModel)]="newTrip.description"
+          name="description"
+          placeholder="הכנס תיאור טיול"
+          rows="3"></textarea>
+      </div>
 
-            <div class="form-group">
-        <label for="category">Category *</label>
-        <div *ngIf="!categoriesList || categoriesList.length === 0" class="no-categories">
-          No categories available. Please add categories first.
-        </div>
-        <ng-container *ngIf="categoriesList && categoriesList.length > 0">
-          <select 
-            id="category"
-            [(ngModel)]="newTrip.category.id" 
-            name="categoryId" 
-            required
-            #cat="ngModel"
-            [class.is-invalid]="cat.invalid && (cat.dirty || cat.touched)">
-            <option [value]="0">-- Choose Category --</option>
-            <option *ngFor="let c of categoriesList" [value]="c.id">
-              {{ c.category }}
-            </option>
-          </select>
-          <small *ngIf="cat.invalid && (cat.dirty || cat.touched)" class="error">
-            Category is required
-          </small>
-        </ng-container>
-      </div>
+      <div class="form-group">
+        <label for="cost">עלות</label>
+        <input
+          id="cost"
+          type="text"
+          [(ngModel)]="newTrip.cost"
+          name="cost"
+          placeholder="הכנס עלות טיול">
+      </div>
 
-            <div class="button-group">
-        <button 
-          type="button" 
-          (click)="uploadTrip(AddForm)"
-          [disabled]="isLoading || AddForm.invalid || !selectedFile"
-          class="btn btn-primary">
-          <span *ngIf="!isLoading">Upload Trip</span>
-          <span *ngIf="isLoading">Uploading...</span>
-        </button>
-        <button 
-          type="button" 
-          (click)="goPreviousPage()"
-          class="btn btn-secondary">
-          Cancel
-        </button>
-      </div>
+      <div class="form-group">
+        <label for="match">התאמה</label>
+        <input
+          id="match"
+          type="text"
+          [(ngModel)]="newTrip.match"
+          name="match"
+          placeholder="הכנס פרטי התאמה">
+      </div>
 
-            <pre class="debug-info">Form Valid: {{ AddForm.valid }} | User ID: {{ newTrip.users.id }}</pre>
-    </form>
-  </div>
+      <div class="form-group">
+        <label for="category">קטגוריה *</label>
+        <div *ngIf="!categoriesList || categoriesList.length === 0" class="no-categories">
+          אין קטגוריות זמינות. יש להוסיף קטגוריות קודם.
+        </div>
+        <ng-container *ngIf="categoriesList && categoriesList.length > 0">
+          <select
+            id="category"
+            [(ngModel)]="newTrip.category.id"
+            name="categoryId"
+            required
+            #cat="ngModel"
+            [class.is-invalid]="cat.invalid && (cat.dirty || cat.touched)">
+            <option [value]="0">-- בחר קטגוריה --</option>
+            <option *ngFor="let c of categoriesList" [value]="c.id">
+              {{ c.category }}
+            </option>
+          </select>
+          <small *ngIf="cat.invalid && (cat.dirty || cat.touched)" class="error">
+            יש לבחור קטגוריה
+          </small>
+        </ng-container>
+      </div>
+
+      <div class="button-group">
+        <button
+          type="button"
+          (click)="uploadTrip(AddForm)"
+          [disabled]="isLoading || AddForm.invalid || !selectedFile"
+          class="btn btn-primary">
+          <span *ngIf="!isLoading">העלה טיול</span>
+          <span *ngIf="isLoading">מעלה...</span>
+        </button>
+        <button
+          type="button"
+          (click)="goPreviousPage()"
+          class="btn btn-secondary">
+          ביטול
+        </button>
+      </div>
+
+      <pre class="debug-info">טופס תקף: {{ AddForm.valid }} | מזהה משתמש: {{ newTrip.user.id }}</pre>
+    </form>
+  </div>
 </div>

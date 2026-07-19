@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import TripDTO, { TripToUpload, TripListDTO } from '../models/trip.model';
 import { Observable } from 'rxjs';
@@ -30,8 +30,36 @@ export class TripService {
   }
 
   uploadTrip(tripToUpload: FormData): Observable<TripToUpload> {
-    // prefer simple POST to baseUrl to match latest backend
-    return this._httpClient.post<TripToUpload>(`${this.baseUrl}/uploadTrip`, tripToUpload, { withCredentials: true });
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null;
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : ''
+    });
+
+    return this._httpClient.post<TripToUpload>(`${this.baseUrl}/uploadTrip`, tripToUpload, {
+      withCredentials: true,
+      headers
+    });
   }
 
+  deleteTripByAdmin(id: number): Observable<any> {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null;
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : ''
+    });
+    return this._httpClient.delete(`${this.baseUrl}/deleteTripByAdmin/${id}`, {
+      withCredentials: true,
+      headers
+    });
+  }
+
+  getDashboardStats(): Observable<{ totalTrips: number; totalUsers: number }> {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('authToken') : null;
+    const headers = new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : ''
+    });
+    return this._httpClient.get<{ totalTrips: number; totalUsers: number }>(`${this.baseUrl}/admin/dashboard-stats`, {
+      withCredentials: true,
+      headers
+    });
+  }
 }

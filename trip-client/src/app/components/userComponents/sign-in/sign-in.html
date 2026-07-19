@@ -1,13 +1,13 @@
 <div class="form-container">
   <mat-card class="login-card">
     <mat-card-title>
-      <h2>Sign In</h2>
+      <h2>התחברות</h2>
     </mat-card-title>
 
     <mat-card-content>
       <form #SignInForm="ngForm">
         <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
+          <mat-label>אימייל</mat-label>
           <input
             matInput
             type="email"
@@ -26,9 +26,9 @@
             }
           }
         </mat-form-field>
-        
+
         <mat-form-field appearance="fill">
-          <mat-label>Password</mat-label>
+          <mat-label>סיסמה</mat-label>
           <input
             matInput
             type="password"
@@ -42,18 +42,18 @@
               <mat-error>שדה חובה</mat-error>
             }
           }
-           <img [src]="getImageSrc(toSignIn)" alt="user image" class="user-image-material" [hidden]="!getImageSrc(toSignIn)">
+           <img [src]="getImageSrc(toSignIn)" alt="תמונת משתמש" class="user-image-material" [hidden]="!getImageSrc(toSignIn)">
         </mat-form-field>
       </form>
     </mat-card-content>
 
     <mat-card-actions class="form-actions">
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="signIn()" 
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="signIn()"
         [disabled]="SignInForm.invalid">
-        Sign In
+        התחבר
       </button>
     </mat-card-actions>
   </mat-card>

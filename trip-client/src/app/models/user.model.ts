@@ -32,6 +32,9 @@ email?: string;
 image?: string
 imagePath?: string
 imageUrl?: string
+isAdmin?: boolean
+roles?: string[]
+authorities?: string[]
 }
 export interface UserToSeeDTO {
 id?: number;

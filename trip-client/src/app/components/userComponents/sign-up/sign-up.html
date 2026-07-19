@@ -1,7 +1,7 @@
 <div class="form-container">
   <mat-card class="signup-card">
     <mat-card-title>
-      <h2>Sign Up</h2>
+      <h2>הרשמה</h2>
     </mat-card-title>
 
     <mat-card-content>
@@ -10,27 +10,27 @@
         <!-- תמונת הפרופיל – הכפתור היפה -->
         <div class="profile-image-wrapper">
           <div class="profile-image-container" (click)="fileInput.click()">
-            <img 
-              [src]="imagePreview || defaultImageUrl" 
-              alt="תמונת פרופיל" 
+            <img
+              [src]="imagePreview || defaultImageUrl"
+              alt="תמונת פרופיל"
               class="profile-preview"
             />
             <div class="edit-overlay">
               <mat-icon>camera_alt</mat-icon>
             </div>
           </div>
-          <input 
-            #fileInput 
-            type="file" 
-            accept="image/*" 
-            (change)="onFileSelected($event)" 
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            (change)="onFileSelected($event)"
             style="display: none;"
           />
         </div>
 
         <!-- שדות הטופס -->
         <mat-form-field appearance="fill">
-          <mat-label>Name</mat-label>
+          <mat-label>שם</mat-label>
           <input matInput type="text" [(ngModel)]="toSignUp.userName" name="userName" #userName="ngModel" required />
           @if (userName.errors && userName.touched && userName.errors['required']) {
             <mat-error>שדה חובה</mat-error>
@@ -38,7 +38,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
+          <mat-label>אימייל</mat-label>
           <input matInput type="email" [(ngModel)]="toSignUp.email" name="email" #email="ngModel" required email />
           @if (email.errors && email.touched) {
             @if (email.errors['required']) {
@@ -50,7 +50,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Password</mat-label>
+          <mat-label>סיסמה</mat-label>
           <input matInput type="password" [(ngModel)]="toSignUp.password" name="password" #password="ngModel" required />
           @if (password.errors && password.touched && password.errors['required']) {
             <mat-error>שדה חובה</mat-error>
@@ -62,7 +62,7 @@
 
     <mat-card-actions class="form-actions">
       <button mat-raised-button color="accent" (click)="signUp()" [disabled]="SignUpFrom.invalid">
-        Sign Up
+        הירשם
       </button>
     </mat-card-actions>
   </mat-card>

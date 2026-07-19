@@ -9,6 +9,8 @@ import { ListComments } from '../../commentComponents/list-comments/list-comment
 import { AddComment } from '../../commentComponents/add-comment/add-comment';
 import { CommentDTO } from '../../../models/comment.model';
 import { PackingListComponent } from '../packing-list-component/packing-list-component';
+import { ChatBox } from '../chat-box/chat-box';
+import { UserService } from '../../../service/user.service';
 
 @Component({
   selector: 'app-trip-details',
@@ -18,7 +20,8 @@ import { PackingListComponent } from '../packing-list-component/packing-list-com
     FormsModule, 
     ListComments, 
     AddComment,
-    PackingListComponent
+    PackingListComponent,
+    ChatBox
 ],
   templateUrl: './trip-details.html',
   styleUrls: ['./trip-details.css']
@@ -35,17 +38,44 @@ export class TripDetails implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private tripService: TripService,
+    private userService: UserService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.userService.getCurrentUser().subscribe(user => {
+      if (user?.id) {
+        this.updateTripOwnerImage(user);
+      }
+    });
+
     const id = +this.route.snapshot.paramMap.get('id')!; 
     this.tripService.getTripById(id).subscribe({
       next: (trip) => {
         this.TripToShow = trip;
+        const currentUser = this.userService['currentUserSubject']?.value;
+        if (currentUser?.id) {
+          this.updateTripOwnerImage(currentUser);
+        }
         this.cdr.detectChanges();
       }
     });
+  }
+
+  updateTripOwnerImage(updatedUser: { id?: number; image?: string; imagePath?: string; imageUrl?: string }): void {
+    if (!this.TripToShow?.user || !updatedUser?.id || this.TripToShow.user.id !== updatedUser.id) {
+      return;
+    }
+
+    this.TripToShow = {
+      ...this.TripToShow,
+      user: {
+        ...this.TripToShow.user,
+        image: updatedUser.image ?? this.TripToShow.user.image,
+        imagePath: updatedUser.imagePath ?? this.TripToShow.user.imagePath,
+        imageUrl: updatedUser.imageUrl ?? this.TripToShow.user.imageUrl
+      }
+    };
   }
 
   onCommentsCountChange(count: number) {
@@ -79,11 +109,18 @@ export class TripDetails implements OnInit {
   getUserImage(): string {
     const user = this.TripToShow?.user;
     if (!user) return 'assets/A1.png';
-    const img = user.image || user.imagePath;
+
+    const img = user.image || user.imagePath || user.imageUrl;
     if (!img) return 'assets/A1.png';
+
+    if (typeof img === 'string' && (img.startsWith('http') || img.startsWith('data:'))) {
+      return img;
+    }
+
     if (img.startsWith('iVBORw') || img.startsWith('/9j/')) {
       return 'data:image/png;base64,' + img;
     }
+
     return `http://localhost:8080/images/${img}`;
   }
 }
