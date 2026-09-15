@@ -264,28 +264,6 @@ Examples of application endpoints include:
 
 Additional endpoints handle authentication, users, trips, destinations, comments, and other application functionality.
 
-## Screenshots
-
-### Home
-
-*Add screenshot here*
-
-### Trip Planning
-
-*Add screenshot here*
-
-### Map
-
-*Add screenshot here*
-
-### AI Assistant
-
-*Add screenshot here*
-
-### User Profile
-
-*Add screenshot here*
-
 ## What I Worked On
 
 The project provided hands-on experience in developing a complete full-stack application.
