@@ -8,6 +8,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class CommentDTO {
     private Long id;
@@ -19,7 +20,10 @@ public class CommentDTO {
     private LocalDate date;
 
     private UserToSeeDTO user;
+    private List<ImageDTO> images;
 
+    public List<ImageDTO> getImages() { return images; }
+    public void setImages(List<ImageDTO> images) { this.images = images; }
     public String getComment() {
         return comment;
     }

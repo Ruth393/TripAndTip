@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Comment {
@@ -27,8 +29,18 @@ public class Comment {
     @JsonIgnore
     private Trip trip;
 
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentImage> images = new ArrayList<>();
+
+
     public Comment() {
     }
+
+
+    public List<CommentImage> getImages() { return images; }
+    public void setImages(List<CommentImage> images) { this.images = images; }
+
 
     public Long getId() {
         return id;

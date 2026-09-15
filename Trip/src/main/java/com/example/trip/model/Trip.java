@@ -1,12 +1,15 @@
 package com.example.trip.model;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +46,60 @@ public class Trip {
     private List<Comment> comments;
 
     public Trip() {}
+    // להוסיף בתוך המחלקה Trip, ליד שאר השדות:
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private Difficulty difficulty;
+
+    private Boolean kidFriendly;
+
+    private Double costAmount; // עלות מספרית לצורך סינון טווח (בנוסף ל-cost הטקסטואלי הקיים)
+
+    @Valid
+    @NotNull(message = "נדרש מיקום לטיול")
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "label", column = @Column(name = "location_label")),
+            @AttributeOverride(name = "latitude", column = @Column(name = "location_latitude")),
+            @AttributeOverride(name = "longitude", column = @Column(name = "location_longitude")),
+            @AttributeOverride(name = "category", column = @Column(name = "location_category")),
+            @AttributeOverride(name = "description", column = @Column(name = "location_description")),
+            @AttributeOverride(name = "type", column = @Column(name = "location_type"))
+    })
+    private TripLocation location;
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripImage> images = new ArrayList<>();
+
+    public List<TripImage> getImages() { return images; }
+    public void setImages(List<TripImage> images) { this.images = images; }
+
+    public TripLocation getLocation() { return location; }
+    public void setLocation(TripLocation location) { this.location = location; }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public Boolean getKidFriendly() {
+        return kidFriendly;
+    }
+
+    public void setKidFriendly(Boolean kidFriendly) {
+        this.kidFriendly = kidFriendly;
+    }
+
+    public Double getCostAmount() {
+        return costAmount;
+    }
+
+    public void setCostAmount(Double costAmount) {
+        this.costAmount = costAmount;
+    }
     public Long getId() {
         return id;
     }

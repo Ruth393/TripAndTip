@@ -1,15 +1,14 @@
 package com.example.trip.controller;
 
 import com.example.trip.dto.SignInDTO;
+import com.example.trip.dto.UserProfileDTO;
 import com.example.trip.mapper.UserMapper;
 import com.example.trip.model.ERole;
 import com.example.trip.model.Role;
 import com.example.trip.model.Users;
 import com.example.trip.security.CustomUserDetails;
 import com.example.trip.security.jwt.JwtUtils;
-import com.example.trip.service.ImageUtils;
-import com.example.trip.service.RoleRepository;
-import com.example.trip.service.UserRepository;
+import com.example.trip.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.example.trip.dto.ForgotPasswordDTO;
+import com.example.trip.dto.ResetPasswordDTO;
 import java.io.IOException;
 import java.util.List;
 
@@ -37,15 +37,24 @@ public class UserController {
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+
+    private final TripRepository tripRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final RatingRepository ratingRepository;
+    private final PasswordResetService passwordResetService;
     @Autowired
     public UserController(UserRepository userRepository, RoleRepository roleRepository,
-                          AuthenticationManager authenticationManager, JwtUtils jwtUtils,
-                          UserMapper userMapper) {
+                          AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserMapper userMapper,
+                          TripRepository tripRepository, FavoriteRepository favoriteRepository, RatingRepository ratingRepository, PasswordResetService passwordResetService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userMapper = userMapper;
+        this.tripRepository = tripRepository;
+        this.favoriteRepository = favoriteRepository;
+        this.ratingRepository = ratingRepository;
+        this.passwordResetService = passwordResetService;
     }
 
     // ─── GET /me ───────────────────────────────────────────────
@@ -136,8 +145,8 @@ public class UserController {
     @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfile(
             @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestPart(value = "userName", required = false) String userName) {
-
+            @RequestPart(value = "userName", required = false) String userName,
+            @RequestPart(value = "bio", required = false) String bio) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()
                 || !(auth.getPrincipal() instanceof CustomUserDetails d)) {
@@ -166,9 +175,11 @@ public class UserController {
                 user.setUserName(cleanUserName);
             }
 
+            if (bio != null) {
+                user.setBio(bio.replace("\"", "").trim());
+            }
             userRepository.save(user);
             return ResponseEntity.ok(userMapper.toSignInDTO(user));
-
         } catch (IOException ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("שגיאה בקריאת קובץ");
         }
@@ -183,7 +194,22 @@ public class UserController {
                 .body("you've been signed out!");
     }
 
+    // ─── POST /forgot-password ──────────────────────────────────
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDTO request) {
+        passwordResetService.requestReset(request.getEmail());
+        return ResponseEntity.ok().build(); // תמיד 200, בלי לחשוף אם המייל קיים
+    }
 
+    // ─── POST /reset-password ───────────────────────────────────
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO request) {
+        boolean success = passwordResetService.resetPassword(request.getToken(), request.getPassword());
+        if (!success) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("הקישור אינו תקין או שפג תוקפו");
+        }
+        return ResponseEntity.ok().build();
+    }
     // ─── PUT /changeRole/{userId} ───────────────────────────────────────
 // פונקציה המאפשרת למנהל לשנות תפקיד של משתמש אחר (להפוך אותו למנהל או להחזיר למשתמש רגיל)
     @PutMapping("/changeRole/{userId}")
@@ -218,6 +244,55 @@ public class UserController {
         userRepository.deleteById(userId);
         return ResponseEntity.ok("המשתמש נמחק לצמיתות מהמערכת על ידי המנהל");
     }
+    // ─── GET /api/user/profile/me ─── הפרופיל שלי (מלא) ──────
+    @GetMapping("/profile/me")
+    public ResponseEntity<?> getMyProfile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("לא מחובר");
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Users user = userRepository.findByEmailWithRoles(userDetails.getUsername()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("משתמש לא נמצא");
+        }
+        return ResponseEntity.ok(buildProfileDTO(user));
+    }
 
+    // ─── GET /api/user/profile/{id} ─── פרופיל ציבורי ──────
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long id) {
+        Users user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("משתמש לא נמצא");
+        }
+        return ResponseEntity.ok(buildProfileDTO(user));
+    }
+
+    private UserProfileDTO buildProfileDTO(Users user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setId(user.getId());
+        dto.setUserName(user.getUserName());
+        dto.setBio(user.getBio());
+        dto.setImagePath(user.getImagePath());
+        // ─── חדש ───
+        dto.setGoogleImageUrl(user.getGoogleImageUrl());
+
+        if (user.getImagePath() != null && !user.getImagePath().trim().isEmpty()) {
+            try {
+                dto.setImage(ImageUtils.getImage(user.getImagePath()));
+            } catch (IOException e) {
+                dto.setImage(null);
+            }
+        }
+
+        dto.setTripsCount(tripRepository.countByUser_Id(user.getId()));
+        dto.setTotalFavoritesReceived(favoriteRepository.countByTrip_User_Id(user.getId()));
+        dto.setTotalRatingsReceived(ratingRepository.countByTrip_User_Id(user.getId()));
+
+        Double avg = ratingRepository.getAverageRatingForUser(user.getId());
+        dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : null);
+
+        return dto;
+    }
 
 }

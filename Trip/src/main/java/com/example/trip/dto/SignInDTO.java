@@ -1,14 +1,8 @@
 package com.example.trip.dto;
 
-
-import com.example.trip.model.Comment;
-import com.example.trip.model.Role;
-import com.example.trip.model.Trip;
 import jakarta.validation.constraints.NotBlank;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SignInDTO {
 
@@ -20,6 +14,8 @@ public class SignInDTO {
     private String image;
     private String imagePath;
 
+    // ─── חדש: כתובת תמונת הפרופיל מגוגל (URL מלא, ריק אצל משתמשים רגילים) ───
+    private String googleImageUrl;
 
     public SignInDTO() {
     }
@@ -56,6 +52,14 @@ public class SignInDTO {
         this.imagePath = imagePath;
     }
 
+    // ─── חדש ───
+    public String getGoogleImageUrl() {
+        return googleImageUrl;
+    }
+
+    public void setGoogleImageUrl(String googleImageUrl) {
+        this.googleImageUrl = googleImageUrl;
+    }
 
     public List<String> getRoles() {
         return roles;

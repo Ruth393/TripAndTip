@@ -5,6 +5,7 @@ import com.example.trip.model.Role;
 import com.example.trip.model.Users;
 import com.example.trip.service.RoleRepository;
 import com.example.trip.service.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,15 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Value("${app.admin.email}")
+    private String adminEmail;
+
+    @Value("${app.admin.password}")
+    private String adminPassword;
+
+    @Value("${app.env:dev}")
+    private String appEnv;
+
     public DataInitializer(RoleRepository roleRepository, UserRepository userRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -26,7 +36,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. איתחול תפקיד USER אם לא קיים
         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseGet(() -> {
                     Role role = new Role();
@@ -34,7 +43,6 @@ public class DataInitializer implements CommandLineRunner {
                     return roleRepository.save(role);
                 });
 
-        // 2. איתחול תפקיד ADMIN אם לא קיים
         Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                 .orElseGet(() -> {
                     Role role = new Role();
@@ -42,14 +50,11 @@ public class DataInitializer implements CommandLineRunner {
                     return roleRepository.save(role);
                 });
 
-        // 3. יצירת מנהל מערכת ראשוני אוטומטי (כדי שתוכלי להתחבר איתו)
-        String adminEmail = "admin@trip.com";
         if (userRepository.findByEmail(adminEmail) == null) {
             Users admin = new Users();
             admin.setUserName("SystemAdmin");
             admin.setEmail(adminEmail);
-            // סיסמה זמנית למנהל: admin1234
-            admin.setPassword(passwordEncoder.encode("admin1234"));
+            admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setImagePath(null);
 
             Set<Role> roles = new HashSet<>();
@@ -58,7 +63,11 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRoles(roles);
 
             userRepository.save(admin);
-            System.out.println(">> Admin user created automatically: admin@trip.com / admin1234");
+
+            if (!"prod".equals(appEnv)) {
+                System.out.println(">> Admin user created automatically (dev env only)");
+            }
         }
     }
 }
+

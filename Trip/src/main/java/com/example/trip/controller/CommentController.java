@@ -14,7 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.trip.model.CommentImage;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.trip.service.ImageUtils;
+import java.util.ArrayList;
 
 
 import java.util.List;
@@ -49,7 +53,7 @@ public class CommentController {
         try {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String username = userDetails.getUsername();
-            Users currentUser = userRepository.findByUserName(username);
+            Users currentUser = userRepository.findByEmail(username);
 
             if (currentUser == null) {
                 return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
@@ -76,15 +80,52 @@ public class CommentController {
 
 
     @GetMapping("/getCommentsByTripsId/{id}")
-    public ResponseEntity<List<CommentDTO>> getCommentsByTripsId(@PathVariable long id){
+    public ResponseEntity<List<CommentDTO>> getCommentsByTripsId(@PathVariable long id) {
         try {
             List<Comment> comments = commentRepository.getCommentsByTrip_Id(id);
-            if (comments.isEmpty()) {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            }
-            return  new ResponseEntity<>(commentMapper.commentsListDTO(comments),HttpStatus.OK);
+            return new ResponseEntity<>(commentMapper.commentsListDTO(comments), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        catch(Exception e){
+    }
+
+
+    @PostMapping(value = "/addCommentWithImages", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CommentDTO> addCommentWithImages(
+            @RequestPart("comment") CommentToAddDTO commentToAddDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> files) {
+        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String username = userDetails.getUsername();
+            Users currentUser = userRepository.findByEmail(username);
+
+            if (currentUser == null) {
+                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            }
+            if (commentToAddDTO.getTrip() == null || commentToAddDTO.getTrip().getId() == null) {
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            }
+            Trip trip = tripRepository.findById(commentToAddDTO.getTrip().getId())
+                    .orElseThrow(() -> new RuntimeException("Trip not found"));
+
+            Comment comment = commentMapper.toComment(commentToAddDTO);
+            comment.setUser(currentUser);
+            comment.setTrip(trip);
+            Comment savedComment = commentRepository.save(comment);
+
+            if (files != null && !files.isEmpty()) {
+                List<CommentImage> commentImages = new ArrayList<>();
+                for (MultipartFile file : files) {
+                    String savedName = ImageUtils.uploadImage(file);
+                    commentImages.add(new CommentImage(savedName, savedComment));
+                }
+                savedComment.setImages(commentImages);
+                commentRepository.save(savedComment);
+            }
+
+            return new ResponseEntity<>(commentMapper.commentToDto(savedComment), HttpStatus.CREATED);
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

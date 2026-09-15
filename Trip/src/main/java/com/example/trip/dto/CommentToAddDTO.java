@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.JoinColumn;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class CommentToAddDTO {
     private Long id;
@@ -14,6 +15,11 @@ public class CommentToAddDTO {
 
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
+
+    private List<ImageDTO> images;
+
+    public List<ImageDTO> getImages() { return images; }
+    public void setImages(List<ImageDTO> images) { this.images = images; }
 
     public String getComment() {
         return comment;

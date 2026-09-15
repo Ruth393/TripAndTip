@@ -38,5 +38,6 @@ public class TripApplication {
                     .secure(ssl -> ssl.sslContext(sslContext));
             webClientBuilder.clientConnector(new ReactorClientHttpConnector(httpClient));
         };
+
     }
 }

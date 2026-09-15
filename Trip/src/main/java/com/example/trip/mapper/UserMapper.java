@@ -19,6 +19,8 @@ public interface UserMapper {
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setImagePath(user.getImagePath());
+        // ─── חדש: מעביר גם את googleImageUrl כפי שהוא (URL חיצוני, ללא עיבוד) ───
+        dto.setGoogleImageUrl(user.getGoogleImageUrl());
 
         if (user.getRoles() != null) {
             List<String> roleNames = user.getRoles().stream()

@@ -16,6 +16,20 @@ public class TripListDTO {
     private String image;
     @NotNull(message = "נדרש משתמש מקושר")
     private UserToSeeDTO user;
+
+    private String difficulty;
+    private Boolean kidFriendly;
+    private Double costAmount;
+
+    public String getDifficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
+
+    public Boolean getKidFriendly() { return kidFriendly; }
+    public void setKidFriendly(Boolean kidFriendly) { this.kidFriendly = kidFriendly; }
+
+    public Double getCostAmount() { return costAmount; }
+    public void setCostAmount(Double costAmount) { this.costAmount = costAmount; }
+
     public Long getId() {
         return id;
     }

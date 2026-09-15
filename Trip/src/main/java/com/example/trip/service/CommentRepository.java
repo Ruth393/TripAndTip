@@ -6,5 +6,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     List<Comment> getCommentsByTrip_Id(Long id);
+
+    void deleteByTrip_Id(Long tripId);
 }
 

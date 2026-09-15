@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
@@ -14,10 +15,14 @@ import org.springframework.web.util.WebUtils;
 import java.security.Key;
 import java.util.Date;
 
-
 @Component
 public class JwtUtils {
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${app.env:dev}")
+    private String appEnv;
 
     public String getJwtFromCookies(HttpServletRequest request) {
         Cookie cookie = WebUtils.getCookie(request, "securitySample");
@@ -27,11 +32,12 @@ public class JwtUtils {
             return null;
         }
     }
+
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(token).getBody().getSubject();
-
     }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
@@ -44,34 +50,46 @@ public class JwtUtils {
             System.out.println("JWT claims string is empty " + e.getMessage());
         } catch (UnsupportedJwtException e) {
             System.out.println("JWT token is unsupported " + e.getMessage());
-        }
-        catch (SignatureException e) {
+        } catch (SignatureException e) {
             System.out.println("Signature is wrong " + e.getMessage());
         }
         return false;
     }
-    public String generateTokenFromUsername(String username) {
 
+    public String generateTokenFromUsername(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime()+86400000))
+                .setExpiration(new Date((new Date()).getTime() + 86400000))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     private Key key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode("=============================================sec=============================================================================================================================="));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     public ResponseCookie generateJwtCookie(CustomUserDetails userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        ResponseCookie cookie = ResponseCookie.from("securitySample", jwt)
-                .path("/api").maxAge(24*60*60).httpOnly(true).build();
-        return cookie;
+        boolean isProd = "prod".equals(appEnv);
+
+        return ResponseCookie.from("securitySample", jwt)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .httpOnly(true)
+                .secure(isProd)
+                .sameSite("Lax")
+                .build();
     }
-    public ResponseCookie getCleanJwtCookie(){
-        ResponseCookie cookie= ResponseCookie.from("securitySample",null).path("/api").build();
-        return cookie;
+
+    public ResponseCookie getCleanJwtCookie() {
+        boolean isProd = "prod".equals(appEnv);
+        return ResponseCookie.from("securitySample", null)
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(isProd)
+                .sameSite("Lax")
+                .build();
     }
 }

@@ -29,6 +29,33 @@ public class TripDTO {
     private UserToSeeDTO user;
 
 
+    private String difficulty;
+    private Boolean kidFriendly;
+    private Double costAmount;
+
+    private List<TripLocationDTO> locations;
+    private List<ImageDTO> images;
+
+
+
+
+    public List<ImageDTO> getImages() { return images; }
+    public void setImages(List<ImageDTO> images) { this.images = images; }
+
+
+
+    public List<TripLocationDTO> getLocations() { return locations; }
+    public void setLocations(List<TripLocationDTO> locations) { this.locations = locations; }
+
+
+    public String getDifficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
+
+    public Boolean getKidFriendly() { return kidFriendly; }
+    public void setKidFriendly(Boolean kidFriendly) { this.kidFriendly = kidFriendly; }
+
+    public Double getCostAmount() { return costAmount; }
+    public void setCostAmount(Double costAmount) { this.costAmount = costAmount; }
 
     public UserToSeeDTO getUser() {
         return user;

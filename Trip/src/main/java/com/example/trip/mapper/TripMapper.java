@@ -1,20 +1,56 @@
 package com.example.trip.mapper;
 
+import com.example.trip.dto.ImageDTO;
 import com.example.trip.dto.TripDTO;
 import com.example.trip.dto.TripListDTO;
+import com.example.trip.dto.TripLocationDTO;
 import com.example.trip.dto.UserToSeeDTO;
 import com.example.trip.model.Trip;
+import com.example.trip.model.TripImage;
 import com.example.trip.model.Users;
 import com.example.trip.service.ImageUtils;
 import org.mapstruct.Mapper;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel="spring")
+@Mapper(componentModel = "spring")
 public interface TripMapper {
     UserToSeeDTO userToSeeDTO(Users user);
 
     List<TripListDTO> tripsListToDto(List<Trip> trips);
+
+    default TripLocationDTO tripLocationToDto(com.example.trip.model.TripLocation loc) {
+        if (loc == null) return null;
+        TripLocationDTO dto = new TripLocationDTO();
+        dto.setLabel(loc.getLabel());
+        dto.setLatitude(loc.getLatitude());
+        dto.setLongitude(loc.getLongitude());
+        dto.setCategory(loc.getCategory());
+        dto.setDescription(loc.getDescription());
+        dto.setType(loc.getType());
+        return dto;
+    }
+
+    default List<TripLocationDTO> wrapLocation(com.example.trip.model.TripLocation loc) {
+        if (loc == null) return java.util.Collections.emptyList();
+        return java.util.List.of(tripLocationToDto(loc));
+    }
+
+    // ממיר את רשימת ה-TripImage של הטיול לרשימת ImageDTO (עם Base64)
+    default List<ImageDTO> tripImagesToDto(List<TripImage> images) {
+        List<ImageDTO> result = new ArrayList<>();
+        if (images == null) return result;
+        for (TripImage ti : images) {
+            try {
+                result.add(new ImageDTO(ti.getId(), ImageUtils.getImage(ti.getImagePath())));
+            } catch (IOException e) {
+                // מדלגים על תמונה שלא נמצאה בדיסק, לא מפילים את כל הטיול
+            }
+        }
+        return result;
+    }
 
     default TripDTO tripToDto(Trip t) throws IOException {
         TripDTO tripDTO = new TripDTO();
@@ -23,9 +59,12 @@ public interface TripMapper {
         tripDTO.setDescription(t.getDescription());
         tripDTO.setCost(t.getCost());
         tripDTO.setMatch(t.getMatch());
+        tripDTO.setDifficulty(t.getDifficulty() != null ? t.getDifficulty().name() : null);
+        tripDTO.setKidFriendly(t.getKidFriendly());
+        tripDTO.setCostAmount(t.getCostAmount());
         tripDTO.setImagePath(t.getImagePath());
+        tripDTO.setLocations(wrapLocation(t.getLocation()));
 
-        // 👈 תיקון: בדוק אם t.getUser() אינו null לפני המיפוי
         if (t.getUser() != null) {
             tripDTO.setUser(userToSeeDTO(t.getUser()));
         } else {
@@ -35,6 +74,7 @@ public interface TripMapper {
         tripDTO.setCategory(t.getCategory());
         tripDTO.setComments(t.getComments());
 
+        // תמונה ראשית - לתאימות לאחור
         if (t.getImagePath() != null && !t.getImagePath().trim().isEmpty()) {
             try {
                 tripDTO.setImage(ImageUtils.getImage(t.getImagePath()));
@@ -44,6 +84,9 @@ public interface TripMapper {
         } else {
             tripDTO.setImage(null);
         }
+
+        // כל התמונות של הטיול (חדש)
+        tripDTO.setImages(tripImagesToDto(t.getImages()));
 
         if (t.getUser() != null) {
             if (t.getUser().getImagePath() != null && !t.getUser().getImagePath().trim().isEmpty()) {
@@ -68,6 +111,10 @@ public interface TripMapper {
         dto.setId(t.getId());
         dto.setName(t.getName());
         dto.setDescription(t.getDescription());
+
+        dto.setDifficulty(t.getDifficulty() != null ? t.getDifficulty().name() : null);
+        dto.setKidFriendly(t.getKidFriendly());
+        dto.setCostAmount(t.getCostAmount());
         dto.setImagePath(t.getImagePath());
 
         if (t.getUser() != null) {

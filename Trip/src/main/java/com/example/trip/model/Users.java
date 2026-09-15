@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ public class Users {
     private String email;
 
     @NotBlank
+    @JsonIgnore
     @Size(min = 8, max = 255, message = "הסיסמה חייבת להיות בת 8 תווים")
     private String password;
 
@@ -31,6 +33,13 @@ public class Users {
 
     @Size(max = 255, message = "נתיב התמונה ארוך מדי")
     private String imagePath;
+
+    // ─── חדש: כתובת תמונת הפרופיל שמגיעה מ-Google OAuth (שדה ה-picture) ───
+    // לא מתערבב עם imagePath בכוונה: imagePath משמש רק לקבצים מקומיים
+    // ש-ImageUtils.getImage() קורא מהדיסק, בעוד ש-googleImageUrl הוא URL חיצוני
+    // מלא (https://...) שמוצג ישירות ב-Frontend בלי הורדה/שמירה מקומית.
+    @Size(max = 500, message = "כתובת תמונת גוגל ארוכה מדי")
+    private String googleImageUrl;
 
     @OneToMany(mappedBy="user")
     @JsonIgnore
@@ -44,21 +53,34 @@ public class Users {
     @JsonIgnore
     private Set<Role> roles = new HashSet<>();
 
+    @jakarta.validation.constraints.Size(max = 500, message = "הביו ארוך מדי (עד 500 תווים)")
+    private String bio;
+
+    // ─── חדש: איפוס סיסמה - שומרים רק hash של הטוקן, לא את הטוקן עצמו ───
+    @JsonIgnore
+    private String resetTokenHash;
+
+    @JsonIgnore
+    private Instant resetTokenExpiry;
+
     public Users() {}
 
-    public Users(String userName, List<Trip> trips, Set<Role> roles, String password, String imagePath, String image, Long id, String email, List<Comment> comments) {
-        this.userName = userName;
-        this.trips = trips;
-        this.roles = roles;
-        this.password = password;
-        this.imagePath = imagePath;
-        this.image = image;
-        this.id = id;
-        this.email = email;
+    public Users(String bio, List<Comment> comments, String email, Long id, String image, String imagePath, String password, Set<Role> roles, List<Trip> trips, String userName) {
+        this.bio = bio;
         this.comments = comments;
+        this.email = email;
+        this.id = id;
+        this.image = image;
+        this.imagePath = imagePath;
+        this.password = password;
+        this.roles = roles;
+        this.trips = trips;
+        this.userName = userName;
     }
 
-    // Getters and Setters ...
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUserName() { return userName; }
@@ -77,4 +99,14 @@ public class Users {
     public void setImage(String image) { this.image = image; }
     public String getImagePath() { return imagePath; }
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+
+    public String getGoogleImageUrl() { return googleImageUrl; }
+    public void setGoogleImageUrl(String googleImageUrl) { this.googleImageUrl = googleImageUrl; }
+
+
+    public String getResetTokenHash() { return resetTokenHash; }
+    public void setResetTokenHash(String resetTokenHash) { this.resetTokenHash = resetTokenHash; }
+    public Instant getResetTokenExpiry() { return resetTokenExpiry; }
+    public void setResetTokenExpiry(Instant resetTokenExpiry) { this.resetTokenExpiry = resetTokenExpiry; }
 }
